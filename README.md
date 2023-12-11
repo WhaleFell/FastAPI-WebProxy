@@ -19,7 +19,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 .\venv\Scripts\Activate.ps1
 
 # update pip version
-python -m pip install --upgrade pip
+python -m pip install --upgrade pip --index-url=https://pypi.org/simple
 
 # install require model
 pip install --upgrade -r requirements.txt --index-url=https://pypi.org/simple

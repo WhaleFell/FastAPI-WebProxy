@@ -19,9 +19,6 @@ app.add_middleware(
 )
 
 
-import re
-
-
 def isValidDomain(url):
     if url.startswith("http://") or url.startswith("https://"):
         return True
@@ -53,6 +50,13 @@ def modifyUrl(request: Request, url: str) -> str:
     return unquote(url)
 
 
+def getMovedUrl(url: str) -> str:
+    """get the moved url"""
+    with httpx.Client(verify=False) as client:
+        resp = client.head(url, follow_redirects=True)
+        return str(resp.url)
+
+
 @app.post(path="/")
 @app.get(path="/")
 async def index(request: Request):
@@ -72,21 +76,27 @@ async def largeFileProxy(request: Request, url: str):
             content=f"Error: Invalid URL {url}",
             status_code=400,
         )
-    # large file proxy use stream download
+
     url = modifyUrl(request, url)
+    # url = getMovedUrl(url)
+
+    # large file proxy use stream download
+    # must use **request** headers.
     stream_req = client.build_request(
         request.method,
         url,
         headers=request.headers.raw,
         content=await request.body(),
     )
-    stream_resp = await client.send(stream_req, stream=True, follow_redirects=True)
+    stream_resp = await client.send(stream_req, stream=True)
     logger.info(f"Proxy large stream File: {url} {stream_resp.status_code}")
 
+    # must use **response** headers.
     return StreamingResponse(
         stream_resp.aiter_raw(),
         status_code=stream_resp.status_code,
-        headers=stream_req.headers,
+        # headers=stream_resp.headers,
+        headers=modifyResponseHeader(stream_resp.headers),
         background=BackgroundTask(stream_resp.aclose),
     )
 
@@ -118,9 +128,12 @@ async def webProxy(request: Request, url: str):
                 content=f"Proxy {url} Error: {exc}", status_code=500
             )
 
+    # NOT ADD ANY HEADERS.(because of some headers may influence the browser)
     return Response(
         content=resp.content,
         status_code=resp.status_code,
+        # headers=modifyResponseHeader(resp.headers),
+        # headers=resp.headers,
     )
 
 
