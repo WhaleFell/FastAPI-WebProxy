@@ -1,0 +1,7 @@
+uvicorn
+fastapi
+pydantic
+pydantic-settings
+httpx
+loguru
+orjson
