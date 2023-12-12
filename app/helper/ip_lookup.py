@@ -296,6 +296,19 @@ def download_qqwry_dat(url: str, save_path: Path):
             raise Exception("Download qqwry.dat url: %s failed" % url)
 
 
+def lookupIP(ip: str) -> str:
+    global q
+    try:
+        result = q.lookup(ip)
+        if not result:
+            return "Unknown"
+        (country, province) = result
+        return f"{country} {province}"
+    except Exception as e:
+        logger.error(e)
+        return "Unknown"
+
+
 if __name__ == "__main__":
     # china ip address lookup
     q = QQwry()

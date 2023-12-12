@@ -1,6 +1,7 @@
 from app.config import settings
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
+from app.helper.ip_lookup import lookupIP
 
 # client = AsyncIOMotorClient(settings.MONGODB_URL)
 # db = client["webproxy"]
@@ -17,6 +18,7 @@ class MongoDBCRUD:
         document = {
             "time": datetime.utcnow(),
             "ip": ip,
+            "where": lookupIP(ip),
             "url": url,
             "status_code": status_code,
         }
