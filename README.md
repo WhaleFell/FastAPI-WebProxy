@@ -4,6 +4,8 @@ A webproxy base on FastAPI.Can build to vercel and any support python serverless
 
 ## Development
 
+Use `black` for code formatting and `mypy` for static code analysis.
+
 **Must use python virual envirement to develop.Use Python3.8 to develop**
 
 In Windows.
