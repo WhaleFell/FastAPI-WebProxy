@@ -40,21 +40,21 @@ def replace_content(text: str, request: Request, type_: str = "clash") -> str:
 
 
 async def get_airport_sub_content(
-    key: str, request: Request, type_: str = "clash"
+    key: str, request: Request, type: str = "clash"
 ) -> str:
-    parameter = SUB_TYPES.get(type_, "clash=1")
+    parameter = SUB_TYPES.get(type, "clash=1")
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             f"https://sub.cccc.gg/link/{key}?{parameter}", headers=haeder
         )
-        return replace_content(resp.text, request, type_)
+        return replace_content(resp.text, request, type)
 
 
 @router.get("/sub/{name:str}/")
 async def sub(
     name: str,
     request: Request,
-    type_: Annotated[
+    type: Annotated[
         str,
         Query(title="sub type", description="support v2ray and clash default clash"),
     ] = "clash",
@@ -64,8 +64,8 @@ async def sub(
     if not key:
         return PlainTextResponse(content=f"Not Found {name} config", status_code=400)
 
-    sub_type = SUB_TYPES.get(type_, "clash=1")
+    sub_type = SUB_TYPES.get(type, "clash=1")
 
-    content = await get_airport_sub_content(key, request, type_)
+    content = await get_airport_sub_content(key, request, type)
 
     return PlainTextResponse(content=content)
