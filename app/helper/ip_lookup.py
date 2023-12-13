@@ -284,6 +284,8 @@ class QQwry:
 
 q = QQwry()
 
+if Path(ROOTPATH, "qqwry.dat").exists():
+    q.load_file(Path(ROOTPATH, "qqwry.dat").as_posix())
 
 @retry(times=5)
 def download_qqwry_dat(url: str, save_path: Path):
@@ -322,6 +324,7 @@ def lookupIP(ip: str) -> str:
     except Exception as e:
         logger.error(e)
         return "Unknown"
+
 
 
 if __name__ == "__main__":
