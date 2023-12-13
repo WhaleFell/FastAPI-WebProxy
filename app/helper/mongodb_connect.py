@@ -51,6 +51,10 @@ class MongoDBCRUD:
             logs.append(AccessLog(**document))
         return logs
 
+    async def rmAllAccessLog(self):
+        """remove all access log"""
+        await self.database["access_log"].delete_many({})
+
 
 mongoCrud = MongoDBCRUD(settings.MONGODB_URL, "webproxy")
 

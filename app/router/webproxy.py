@@ -8,7 +8,10 @@ from app.helper.webproxy_func import (
     modifyResquestHeader,
     modifyUrl,
     isValidDomain,
+    getMovedUrl,
 )
+import gzip
+from app.helper.webproxy_func import change_server_header, change_client_header
 
 
 router = APIRouter()
@@ -16,7 +19,6 @@ router = APIRouter()
 
 @router.get(path="/file/{url:path}")
 @router.post(path="/file/{url:path}")
-@logger.catch()
 async def largeFileProxy(request: Request, url: str):
     if not isValidDomain(url):
         logger.error(f"Invalid URL {url}")
@@ -25,36 +27,50 @@ async def largeFileProxy(request: Request, url: str):
             status_code=400,
         )
 
+    _NON_REQUEST_BODY_METHODS = ("GET", "HEAD", "OPTIONS", "TRACE")
+    request_content = (
+        None if request.method in _NON_REQUEST_BODY_METHODS else request.stream()
+    )
     url = modifyUrl(request, url)
-    # url = getMovedUrl(url)
+    url = getMovedUrl(url)
+    # 将请求头中的host字段改为目标url的host
+    # 同时强制移除"keep-alive"字段和添加"keep-alive"值到"connection"字段中保持连接
+    require_close, proxy_header = change_client_header(
+        headers=request.headers, target_url=httpx.URL(url)
+    )
+    # async with httpx.AsyncClient(verify=False) as client:
+    proxy_request = client.build_request(
+        method=request.method,
+        url=url,
+        params=request.query_params,
+        headers=proxy_header,
+        content=request_content,  # FIXME: 一个已知问题是，流式响应头包含'transfer-encoding': 'chunked'，但有些服务器会400拒绝这个头
+        # cookies=request.cookies,  # NOTE: headers中已有的cookie优先级高，所以这里不需要
+    )
 
-    # large file proxy use stream download
-    # must use **request** headers.
-    async with httpx.AsyncClient(verify=False) as client:
-        stream_req = client.build_request(
-            request.method,
-            url,
-            headers=request.headers.raw,
-            content=await request.body(),
-        )
-        stream_resp = await client.send(stream_req, stream=True)
-        logger.info(f"Proxy large stream File: {url} {stream_resp.status_code}")
+    proxy_response = await client.send(
+        proxy_request,
+        stream=True,
+        # follow_redirects=True,
+    )
 
-    # must use **response** headers.
-    # ref: https://stackoverflow.com/questions/71395796/return-file-streaming-response-from-online-video-url-in-fastapi
+    # 依据先前客户端的请求，决定是否要添加"connection": "close"头到响应头中以关闭连接
+    # https://www.uvicorn.org/server-behavior/#http-headers
+    # 如果响应头包含"connection": "close"，uvicorn会自动关闭连接
+    proxy_response_headers = change_server_header(
+        headers=proxy_response.headers, require_close=require_close
+    )
+
     return StreamingResponse(
-        stream_resp.aiter_raw(),
-        status_code=stream_resp.status_code,
-        # headers=stream_resp.headers,
-        media_type=stream_resp.headers["content-type"],
-        headers=modifyResponseHeader(stream_resp.headers),
-        background=BackgroundTask(stream_resp.aclose),
+        content=proxy_response.aiter_raw(),
+        status_code=proxy_response.status_code,
+        headers=proxy_response_headers,
+        background=BackgroundTask(proxy_response.aclose),
     )
 
 
 @router.post(path="/proxy/{url:path}")
 @router.get(path="/proxy/{url:path}")
-@logger.catch()
 async def webProxy(request: Request, url: str):
     if not isValidDomain(url):
         logger.error(f"Invalid URL {url}")
@@ -82,12 +98,55 @@ async def webProxy(request: Request, url: str):
     # if "text/html" in resp.headers["content-type"]:
     #     content = disposeHtml(resp.content, request.url._url)
     # else:
-    content = resp.content
 
-    # NOT ADD ANY HEADERS.(because of some headers may influence the browser)
+    # use gzip compress
+    content = gzip.compress(resp.content)
+
+    # Now add some allow proxy headers to response.to solve some headers may influence the browser.
+    # gzip will cause browser not show content
     return Response(
         content=content,
         status_code=resp.status_code,
-        # headers=modifyResponseHeader(resp.headers),
+        headers=modifyResponseHeader(resp.headers),
         # headers=resp.headers,
+    )
+
+
+# NOTE: client must be a global variable.outside of the function.
+client = httpx.AsyncClient()
+
+
+@router.get("/test/{path:path}")
+async def test(request: Request, path: str):
+    # url = httpx.URL(path=request.url.path, query=request.url.query.encode("utf-8"))
+    url = modifyUrl(request, path)
+    url = getMovedUrl(url)
+    require_close, proxy_header = change_client_header(
+        headers=request.headers, target_url=httpx.URL(url)
+    )
+    _NON_REQUEST_BODY_METHODS = ("GET", "HEAD", "OPTIONS", "TRACE")
+    request_content = (
+        None if request.method in _NON_REQUEST_BODY_METHODS else request.stream()
+    )
+    rp_req = client.build_request(
+        method=request.method,
+        url=url,
+        params=request.query_params,
+        headers=proxy_header,
+        content=request_content,  # FIXME: 一个已知问题是，流式响应头包含'transfer-encoding': 'chunked'，但有些服务器会400拒绝这个头
+        # cookies=request.cookies,  # NOTE: headers中已有的cookie优先级高，所以这里不需要
+    )
+    # rp_req = client.build_request(
+    #     request.method, url, headers=request.headers.raw, content=request.stream()
+    # )
+    rp_resp = await client.send(rp_req, stream=True)
+
+    proxy_response_headers = change_server_header(
+        headers=rp_resp.headers, require_close=require_close
+    )
+    return StreamingResponse(
+        rp_resp.aiter_raw(),
+        status_code=rp_resp.status_code,
+        headers=proxy_response_headers,
+        background=BackgroundTask(rp_resp.aclose),
     )

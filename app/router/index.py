@@ -41,3 +41,14 @@ async def checkLog(
     result = await mongoCrud.searchAccessLog(skip=skip, limit=limit)
 
     return BaseResp[List[AccessLog]](code=1, msg="success", data=result)
+
+
+@router.get(path="/log/rm")
+async def rmLog(
+    key: Annotated[str, Query(title="password", description="remove log password")]
+) -> BaseResp[bool]:
+    """remove all log"""
+    if key == settings.PASSWORD:
+        await mongoCrud.rmAllAccessLog()
+        return BaseResp[bool](code=1, msg="success rm all log", data=True)
+    return BaseResp[bool](code=0, msg="password error", data=False)

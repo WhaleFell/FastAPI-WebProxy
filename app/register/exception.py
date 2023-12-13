@@ -156,9 +156,9 @@ def register_exception(app: FastAPI):
     @app.exception_handler(Exception)
     async def all_exception_handler(request: Request, exc: Exception) -> ORJSONResponse:
         """全局异常"""
-        error_info = f"Global Error: {exc} URL:{request.url}"
-
-        logger.exception(error_info)
+        error_info = f"Global Error: {str(exc)} URL:{request.url}"
+        # logger.exception(error_info)
+        logger.error(error_info)
 
         return response_body(
             request=request,

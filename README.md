@@ -38,6 +38,7 @@ uvicorn app.main:app --port 8000 --reload
 
 2. access log:
     - url: `/log/` method: GET desc: get access log
+    - url: `/log/rm?key={password}` method: GET desc: remove all access log
 
 3. ip info: (use qqwry ip database)
     - url: `/ip/?ip=1.1.1.1` method: GET desc: get ip info if without ip param will get client ip info.

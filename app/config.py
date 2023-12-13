@@ -19,6 +19,10 @@ ROOTPATH: Path = Path.cwd().absolute()
 class Settings(BaseSettings):
     PROJECT_DESC: str = "A WebProxy Base on FastAPI"
     PROJECT_VERSION: str = "1.0"
+    PASSWORD: str = "lovehyy"
+
+    # DEV mode
+    DEV: bool = False
 
     BASE_URL: str = "http://127.0.0.1:8000"
 

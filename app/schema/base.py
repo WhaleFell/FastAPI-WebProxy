@@ -44,4 +44,4 @@ class AccessLog(BaseModel):
     # switch time to utc+8
     @field_validator("time")
     def time_to_utc8(cls, v: datetime) -> datetime:
-        return v.astimezone(timezone(timedelta(hours=8)))
+        return v + timedelta(hours=8)
