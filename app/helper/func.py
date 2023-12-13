@@ -4,8 +4,6 @@ from loguru import logger
 import httpx
 
 
-
-
 def get_client_ip(request: Request) -> str:
     """get client ip"""
     # behind reverse proxy header

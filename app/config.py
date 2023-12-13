@@ -4,7 +4,7 @@
 # config.py 配置文件
 
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Mapping
 from pydantic import AnyHttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     QQWRY_DOWNLOAD_URL: str = (
         "https://raw.githubusercontent.com/FW27623/qqwry/main/qqwry.dat"
     )
+
+    # sub airports url
+    SUB_AIRPORTS_DICT: Mapping[str, str] = {
+        "good": "QhTycby0GHJECm9h",
+    }
 
     model_config = SettingsConfigDict(case_sensitive=True)  # 区分大小写
 
