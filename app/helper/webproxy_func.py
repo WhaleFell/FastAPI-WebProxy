@@ -244,7 +244,6 @@ async def proxy_stream_file(request: Request, target_url: str) -> StreamingRespo
     proxy_response_headers = change_server_header(
         headers=proxy_response.headers, require_close=require_close
     )
-    print(proxy_response_headers)
 
     return StreamingResponse(
         content=proxy_response.aiter_raw(),

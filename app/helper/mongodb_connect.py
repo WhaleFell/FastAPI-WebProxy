@@ -17,6 +17,8 @@ class MongoDBCRUD:
     def __init__(self, mongodb_url: str, database_name: str):
         self.client = AsyncIOMotorClient(mongodb_url)
         self.database = self.client[database_name]
+        # https://stackoverflow.com/questions/65542103/future-task-attached-to-a-different-loop
+        # deploy in vercel.can cause attached to a different loop.
         self.client.get_io_loop = asyncio.get_event_loop
 
     async def insert_one(self, collection_name: str, document: dict) -> bool:
