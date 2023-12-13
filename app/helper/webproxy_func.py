@@ -1,6 +1,7 @@
+# modify for: https://github.com/WSH032/fastapi-proxy-lib/blob/main/src/fastapi_proxy_lib/core/http.py
 import httpx
 import re
-from fastapi import Request
+from fastapi import Request, Response
 from urllib.parse import unquote, urljoin
 from loguru import logger
 from typing import List
@@ -10,14 +11,18 @@ from starlette.datastructures import (
 from starlette.datastructures import (
     MutableHeaders as StarletteMutableHeaders,
 )
+from starlette.background import BackgroundTask
+from fastapi.responses import StreamingResponse, PlainTextResponse
+import gzip
 
 from typing import (
-    Any,
     List,
     NamedTuple,
-    NoReturn,
-    Optional,
-    Union,
+)
+
+# # NOTE: client must be a global variable.outside of the function.
+GlobalHttpxClient = httpx.AsyncClient(
+    verify=False, timeout=10, limits=httpx.Limits(max_keepalive_connections=1000)
 )
 
 
@@ -35,57 +40,32 @@ class _ConnectionHeaderParseResult(NamedTuple):
     new_headers: StarletteMutableHeaders
 
 
-def isValidDomain(url):
+def is_valid_domain(url):
     if url.startswith("http://") or url.startswith("https://"):
         return True
 
 
-def modifyResquestHeader(request: Request, url: str) -> dict:
-    """Add referer and host header"""
-    header = {}
-    for k, v in request.headers.items():
-        header[k] = v
-    header["referer"] = url
-    header["host"] = url.replace("http://", "").replace("https://", "").split("/")[0]
-    header[
-        "user-agent"
-    ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/999.0.9999.999 Safari/537.36"
-
-    logger.info(f"Proxy request header: {header}")
-    return header
-
-
-def modifyResponseHeader(header: httpx.Headers) -> dict:
-    """set allow proxy headers to response"""
-    final_header = {}
-    for k, v in header.items():
-        final_header[k] = v
-    logger.info(f"Modify Proxy response header: {final_header}")
-    return final_header
-
-
-def modifyUrl(request: Request, url: str) -> str:
+def modify_url(request: Request, url: str) -> str:
     if request.url.query:
         url += "?" + request.url.query
     return unquote(url)
 
 
-def getMovedUrl(url: str) -> str:
+def get_redirect_url(url: str) -> str:
     """get the moved url"""
     with httpx.Client(verify=False) as client:
         resp = client.head(url, follow_redirects=True)
         return str(resp.url)
 
 
-def disposeHtml(html: bytes, proxy_url: str) -> str:
-    """dispose html"""
+def replace_html(html: bytes, proxy_url: str) -> str:
+    """replace the src and href in html"""
     pattern = r'(src|href|content)="(.*?)"'
     content = re.sub(
         pattern,
         lambda match: match.group(1) + '="' + urljoin(proxy_url, match.group(2)) + '"',
         html.decode("utf-8"),
     )
-    # print(content)
     return content
 
 
@@ -173,6 +153,10 @@ def change_client_header(
     if "keep-alive" in new_headers:
         del new_headers["keep-alive"]
 
+    # new_headers[
+    #     "user-agent"
+    # ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/999.0.9999.999 Safari/537.36"
+
     return _ConnectionHeaderParseResult(whether_require_close, new_headers)
 
 
@@ -214,3 +198,107 @@ def change_server_header(
         del headers["keep-alive"]
 
     return headers
+
+
+async def proxy_stream_file(request: Request, target_url: str) -> StreamingResponse:
+    """send request to target url
+
+    return the stream response
+    """
+    # clean cookie
+    GlobalHttpxClient.cookies.clear()
+
+    url = modify_url(request, target_url)
+    # not need content body method
+    _NON_REQUEST_BODY_METHODS = ("GET", "HEAD", "OPTIONS", "TRACE")
+    request_content = (
+        None if request.method in _NON_REQUEST_BODY_METHODS else request.stream()
+    )
+    # 将请求头中的host字段改为目标url的host
+    # 同时强制移除"keep-alive"字段和添加"keep-alive"值到"connection"字段中保持连接
+    require_close, proxy_header = change_client_header(
+        headers=request.headers, target_url=httpx.URL(url)
+    )
+
+    # generate request
+    proxy_request = GlobalHttpxClient.build_request(
+        method=request.method,
+        url=url,
+        params=request.query_params,
+        headers=proxy_header,
+        content=request_content,  # FIXME: 一个已知问题是，流式响应头包含'transfer-encoding': 'chunked'，但有些服务器会400拒绝这个头
+        # cookies=request.cookies,  # NOTE: headers中已有的cookie优先级高，所以这里不需要
+    )
+
+    # send request
+    proxy_response = await GlobalHttpxClient.send(
+        proxy_request,
+        stream=True,
+        # follow_redirects=True,
+    )
+
+    # 依据先前客户端的请求，决定是否要添加"connection": "close"头到响应头中以关闭连接
+    # https://www.uvicorn.org/server-behavior/#http-headers
+    # 如果响应头包含"connection": "close"，uvicorn会自动关闭连接
+    proxy_response_headers = change_server_header(
+        headers=proxy_response.headers, require_close=require_close
+    )
+
+    return StreamingResponse(
+        content=proxy_response.aiter_raw(),
+        status_code=proxy_response.status_code,
+        headers=proxy_response_headers,
+        background=BackgroundTask(proxy_response.aclose),
+    )
+
+
+async def proxy_web_content(request: Request, target_url: str) -> Response:
+    """send request to target url
+
+    return the stream response
+    """
+    # clean cookie
+    GlobalHttpxClient.cookies.clear()
+
+    url = modify_url(request, target_url)
+    # not need content body method
+    _NON_REQUEST_BODY_METHODS = ("GET", "HEAD", "OPTIONS", "TRACE")
+    request_content = (
+        None if request.method in _NON_REQUEST_BODY_METHODS else request.stream()
+    )
+    # 将请求头中的host字段改为目标url的host
+    # 同时强制移除"keep-alive"字段和添加"keep-alive"值到"connection"字段中保持连接
+    require_close, proxy_header = change_client_header(
+        headers=request.headers, target_url=httpx.URL(url)
+    )
+
+    # generate request
+    proxy_request = GlobalHttpxClient.build_request(
+        method=request.method,
+        url=url,
+        params=request.query_params,
+        headers=proxy_header,
+        content=request_content,  # FIXME: 一个已知问题是，流式响应头包含'transfer-encoding': 'chunked'，但有些服务器会400拒绝这个头
+        # cookies=request.cookies,  # NOTE: headers中已有的cookie优先级高，所以这里不需要
+    )
+
+    # send request
+    proxy_response = await GlobalHttpxClient.send(
+        proxy_request,
+        follow_redirects=True,
+    )
+
+    # 依据先前客户端的请求，决定是否要添加"connection": "close"头到响应头中以关闭连接
+    # https://www.uvicorn.org/server-behavior/#http-headers
+    # 如果响应头包含"connection": "close"，uvicorn会自动关闭连接
+    proxy_response_headers = change_server_header(
+        headers=proxy_response.headers, require_close=require_close
+    )
+
+    content = gzip.compress(proxy_response.content)
+
+    return Response(
+        content=content,
+        status_code=proxy_response.status_code,
+        headers=proxy_response_headers,
+    )

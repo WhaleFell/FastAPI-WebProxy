@@ -12,8 +12,7 @@ from app.helper.ip_lookup import setup_qqwry
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # before app start
-    if not settings.DEV:
-        setup_qqwry()
+    setup_qqwry(update=not settings.DEV)
     yield
     # after app stop
     logger.success("After app stop")

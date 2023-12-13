@@ -298,12 +298,15 @@ def download_qqwry_dat(url: str, save_path: Path):
             raise Exception("Download qqwry.dat url: %s failed" % url)
 
 
-def setup_qqwry():
+def setup_qqwry(update: bool = False):
     global q
     logger.success("Before app start")
-    logger.info("Download qqwry.dat...")
-    download_qqwry_dat(settings.QQWRY_DOWNLOAD_URL, Path(ROOTPATH, "qqwry.dat"))
-    logger.info("Download qqwry.dat success start load qqwry.dat...")
+    if update or not Path(ROOTPATH, "qqwry.dat").exists():
+        logger.info("Download qqwry.dat...")
+        download_qqwry_dat(settings.QQWRY_DOWNLOAD_URL, Path(ROOTPATH, "qqwry.dat"))
+        logger.info("Download qqwry.dat success start load qqwry.dat...")
+
+    logger.info("Load qqwry.dat...")
     q.load_file(Path(ROOTPATH, "qqwry.dat").as_posix())
     logger.info("Load qqwry.dat success")
 

@@ -40,7 +40,10 @@ async def checkLog(
     """check log"""
     result = await mongoCrud.searchAccessLog(skip=skip, limit=limit)
 
-    return BaseResp[List[AccessLog]](code=1, msg="success", data=result)
+    if result:
+        return BaseResp[List[AccessLog]](code=1, msg="success", data=result)
+    else:
+        return BaseResp[List[AccessLog]](code=0, msg="no log", data=result)
 
 
 @router.get(path="/log/rm")
