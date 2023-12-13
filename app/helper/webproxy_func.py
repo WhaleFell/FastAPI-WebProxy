@@ -208,8 +208,9 @@ async def proxy_stream_file(request: Request, target_url: str) -> StreamingRespo
     # clean cookie
     GlobalHttpxClient.cookies.clear()
 
-    url = modify_url(request, target_url)
+    # url = modify_url(request, target_url)
     # not need content body method
+    url = target_url
     _NON_REQUEST_BODY_METHODS = ("GET", "HEAD", "OPTIONS", "TRACE")
     request_content = (
         None if request.method in _NON_REQUEST_BODY_METHODS else request.stream()
@@ -261,8 +262,9 @@ async def proxy_web_content(request: Request, target_url: str) -> Response:
     # clean cookie
     GlobalHttpxClient.cookies.clear()
 
-    url = modify_url(request, target_url)
+    # url = modify_url(request, target_url)
     # not need content body method
+    url = target_url
     _NON_REQUEST_BODY_METHODS = ("GET", "HEAD", "OPTIONS", "TRACE")
     request_content = (
         None if request.method in _NON_REQUEST_BODY_METHODS else request.stream()

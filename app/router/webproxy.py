@@ -41,4 +41,5 @@ async def webProxy(
             content=f"Error: Invalid URL {url}",
             status_code=400,
         )
+
     return await proxy_web_content(request, url)
