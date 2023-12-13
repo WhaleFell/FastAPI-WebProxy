@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Request, Response, Query
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from loguru import logger
-import httpx
-import gzip
+from typing import Optional, Annotated
 
 from typing import Union
 
@@ -16,9 +15,11 @@ router = APIRouter()
 
 
 # ref: https://github.com/WSH032/fastapi-proxy-lib/blob/main/src/fastapi_proxy_lib/core/http.py
-@router.get(path="/file/{url:path}")
-@router.post(path="/file/{url:path}")
-async def largeFileProxy(request: Request, url: str):
+@router.get(path="/file/")
+@router.post(path="/file/")
+async def largeFileProxy(
+    request: Request, url: Annotated[str, Query(title="URL", description="URL address")]
+):
     if not is_valid_domain(url):
         logger.error(f"Invalid URL {url}")
         return Response(
@@ -29,9 +30,11 @@ async def largeFileProxy(request: Request, url: str):
     return await proxy_stream_file(request, url)
 
 
-@router.post(path="/proxy/{url:path}")
-@router.get(path="/proxy/{url:path}")
-async def webProxy(request: Request, url: str):
+@router.post(path="/proxy/")
+@router.get(path="/proxy/")
+async def webProxy(
+    request: Request, url: Annotated[str, Query(title="URL", description="URL address")]
+):
     if not is_valid_domain(url):
         logger.error(f"Invalid URL {url}")
         return Response(
