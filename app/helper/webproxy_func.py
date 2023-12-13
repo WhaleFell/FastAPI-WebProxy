@@ -153,9 +153,9 @@ def change_client_header(
     if "keep-alive" in new_headers:
         del new_headers["keep-alive"]
 
-    # new_headers[
-    #     "user-agent"
-    # ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/999.0.9999.999 Safari/537.36"
+    new_headers[
+        "user-agent"
+    ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/999.0.9999.999 Safari/537.36"
 
     return _ConnectionHeaderParseResult(whether_require_close, new_headers)
 
@@ -231,10 +231,11 @@ async def proxy_stream_file(request: Request, target_url: str) -> StreamingRespo
     )
 
     # send request
+    # follow redirect can open
     proxy_response = await GlobalHttpxClient.send(
         proxy_request,
         stream=True,
-        # follow_redirects=True,
+        follow_redirects=True,
     )
 
     # 依据先前客户端的请求，决定是否要添加"connection": "close"头到响应头中以关闭连接
@@ -243,6 +244,7 @@ async def proxy_stream_file(request: Request, target_url: str) -> StreamingRespo
     proxy_response_headers = change_server_header(
         headers=proxy_response.headers, require_close=require_close
     )
+    print(proxy_response_headers)
 
     return StreamingResponse(
         content=proxy_response.aiter_raw(),
