@@ -36,9 +36,12 @@ async def checkLog(
         int, Query(title="log start index", description="log start index")
     ] = 0,
     limit: Annotated[int, Query(title="limit", description="return log limit")] = 200,
+    kw: Annotated[
+        Optional[str], Query(title="keyword", description="search keyword")
+    ] = None,
 ) -> BaseResp[List[AccessLog]]:
     """check log"""
-    result = await mongoCrud.searchAccessLog(skip=skip, limit=limit)
+    result = await mongoCrud.searchAccessLog(skip=skip, limit=limit, include_keyword=kw)
 
     if result:
         return BaseResp[List[AccessLog]](code=1, msg="success", data=result)

@@ -2,6 +2,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
 from loguru import logger
 from typing import List
+from typing import Optional
 
 from app.config import settings
 from app.helper.ip_lookup import lookupIP
@@ -41,11 +42,13 @@ class MongoDBCRUD:
         }
         await self.insert_one(collection_name="access_log", document=document)
 
-    async def searchAccessLog(self, skip: int = 0, limit: int = 200) -> List[AccessLog]:
+    async def searchAccessLog(
+        self, skip: int = 0, limit: int = 200, include_keyword: Optional[str] = None
+    ) -> List[AccessLog]:
         """search access log"""
         cursor = (
             self.database["access_log"]
-            .find({})
+            .find({} if not include_keyword else {"url": {"$regex": include_keyword}})
             .skip(skip)
             .limit(limit)
             .sort("time", direction=-1)
