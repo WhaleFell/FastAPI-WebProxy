@@ -296,10 +296,10 @@ async def proxy_web_content(request: Request, target_url: str) -> Response:
         headers=proxy_response.headers, require_close=require_close
     )
 
-    content = gzip.compress(proxy_response.content)
+    # content = gzip.compress(proxy_response.content)
 
     return Response(
-        content=content,
+        content=proxy_response.content,
         status_code=proxy_response.status_code,
-        headers=proxy_response_headers,
+        # headers=proxy_response_headers,
     )
