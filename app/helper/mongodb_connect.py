@@ -6,6 +6,7 @@ from typing import List
 from app.config import settings
 from app.helper.ip_lookup import lookupIP
 from app.schema.base import AccessLog
+import asyncio
 
 # client = AsyncIOMotorClient(settings.MONGODB_URL)
 # db = client["webproxy"]
@@ -16,6 +17,7 @@ class MongoDBCRUD:
     def __init__(self, mongodb_url: str, database_name: str):
         self.client = AsyncIOMotorClient(mongodb_url)
         self.database = self.client[database_name]
+        self.client.get_io_loop = asyncio.get_event_loop
 
     async def insert_one(self, collection_name: str, document: dict) -> bool:
         """insert one document with error handling"""
