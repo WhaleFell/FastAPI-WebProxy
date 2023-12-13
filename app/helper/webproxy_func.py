@@ -269,16 +269,18 @@ async def proxy_web_content(request: Request, target_url: str) -> Response:
     )
     # 将请求头中的host字段改为目标url的host
     # 同时强制移除"keep-alive"字段和添加"keep-alive"值到"connection"字段中保持连接
-    require_close, proxy_header = change_client_header(
-        headers=request.headers, target_url=httpx.URL(url)
-    )
+    # require_close, proxy_header = change_client_header(
+    #     headers=request.headers, target_url=httpx.URL(url)
+    # )
 
     # generate request
     proxy_request = GlobalHttpxClient.build_request(
         method=request.method,
         url=url,
         params=request.query_params,
-        headers=proxy_header,
+        headers={
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        },
         content=request_content,  # FIXME: 一个已知问题是，流式响应头包含'transfer-encoding': 'chunked'，但有些服务器会400拒绝这个头
         # cookies=request.cookies,  # NOTE: headers中已有的cookie优先级高，所以这里不需要
     )
@@ -292,9 +294,9 @@ async def proxy_web_content(request: Request, target_url: str) -> Response:
     # 依据先前客户端的请求，决定是否要添加"connection": "close"头到响应头中以关闭连接
     # https://www.uvicorn.org/server-behavior/#http-headers
     # 如果响应头包含"connection": "close"，uvicorn会自动关闭连接
-    proxy_response_headers = change_server_header(
-        headers=proxy_response.headers, require_close=require_close
-    )
+    # proxy_response_headers = change_server_header(
+    #     headers=proxy_response.headers, require_close=require_close
+    # )
 
     # content = gzip.compress(proxy_response.content)
 
