@@ -1,24 +1,23 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from starlette.background import BackgroundTask
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from contextlib import asynccontextmanager
 from pathlib import Path
+import time
 
 from app.config import settings, ROOTPATH
-from app.helper.ip_lookup import q, download_qqwry_dat
+from app.helper.ip_lookup import setup_qqwry
+from app.helper.mongodb_connect import mongoCrud
+from app.helper.func import get_client_ip
 
 
 # fastapi lifespan https://fastapi.tiangolo.com/advanced/events/
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # before app start
-    logger.success("Before app start")
-    logger.info("Download qqwry.dat...")
-    download_qqwry_dat(settings.QQWRY_DOWNLOAD_URL, Path(ROOTPATH, "qqwry.dat"))
-    logger.info("Download qqwry.dat success start load qqwry.dat...")
-    q.load_file(Path(ROOTPATH, "qqwry.dat").as_posix())
-    logger.info("Load qqwry.dat success")
+    setup_qqwry()
     yield
     # after app stop
     logger.success("After app stop")
@@ -39,9 +38,26 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def root():
-    return PlainTextResponse(content=settings.PROJECT_DESC)
+# fastapi middleware run background task
+# https://stackoverflow.com/questions/72372029/fastapi-background-task-in-middleware
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+
+    # don't record 404 error
+    if response.status_code == 404:
+        return response
+
+    response.background = BackgroundTask(
+        mongoCrud.newAccessLog,
+        get_client_ip(request),
+        request.url._url,
+        response.status_code,
+    )
+    return response
 
 
 # register exception handler
@@ -51,13 +67,12 @@ register_exception(app)
 
 # register router
 from app.router import ip_lookup
+from app.router import webproxy
+from app.router import index
 
 app.include_router(ip_lookup.router, tags=["ip_lookup"])
-
-from app.router import webproxy
-
 app.include_router(webproxy.router, tags=["webproxy"])
-
+app.include_router(index.router, tags=["access_log"])
 
 if __name__ == "__main__":
     import uvicorn

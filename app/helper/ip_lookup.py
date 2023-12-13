@@ -67,6 +67,8 @@ import httpx
 from pathlib import Path
 from app.helper.func import retry
 
+from app.config import settings, ROOTPATH
+
 __all__ = ("QQwry",)
 
 # logger = logging.getLogger(__name__)
@@ -294,6 +296,16 @@ def download_qqwry_dat(url: str, save_path: Path):
         else:
             logger.error("Download qqwry.dat url: %s failed" % url)
             raise Exception("Download qqwry.dat url: %s failed" % url)
+
+
+def setup_qqwry():
+    global q
+    logger.success("Before app start")
+    logger.info("Download qqwry.dat...")
+    download_qqwry_dat(settings.QQWRY_DOWNLOAD_URL, Path(ROOTPATH, "qqwry.dat"))
+    logger.info("Download qqwry.dat success start load qqwry.dat...")
+    q.load_file(Path(ROOTPATH, "qqwry.dat").as_posix())
+    logger.info("Load qqwry.dat success")
 
 
 def lookupIP(ip: str) -> str:

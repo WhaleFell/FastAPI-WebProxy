@@ -19,8 +19,9 @@ async def ipLookup(
     """ip lookup"""
     if not ip:
         ip = get_client_ip(request)
-        if not ip:
-            raise HTTPException(status_code=400, detail="Invalid IP address")
+
+    if ip == "Unknown":
+        raise HTTPException(status_code=400, detail="Unknown IP address")
 
     result = lookupIP(ip)
     return BaseResp[dict](code=1, msg="success", data={"ip": ip, "where": f"{result}"})

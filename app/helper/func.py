@@ -4,17 +4,16 @@ from loguru import logger
 import re
 
 
-def get_client_ip(request: Request) -> Optional[str]:
+def get_client_ip(request: Request) -> str:
     """get client ip"""
-    x = "x-forwarded-for".encode("utf-8")
+    # behind reverse proxy header
+    x_header_list = ["x-forwarded-for", "x-real-ip", "x-vercel-forwarded-for"]
     for header in request.headers.raw:
-        if header[0] == x:
-            origin_ip, forward_ip = re.split(", ", header[1].decode("utf-8"))
-            # print(f"origin_ip:\t{origin_ip}")
-            # print(f"forward_ip:\t{forward_ip}")
-            return origin_ip
+        if header[0].decode("utf-8") in x_header_list:
+            return header[1].decode("utf-8").split(",")[0]
     if request.client:
         return request.client.host
+    return "Unknown"
 
 
 # retry decorator

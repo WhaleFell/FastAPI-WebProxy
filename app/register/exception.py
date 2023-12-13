@@ -8,13 +8,13 @@
 @Desc    :   FastAPI exeception handle
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 
 # `jsonable_encoder` can covert the pydantic/datetime/Any to Python object
 # https://fastapi.tiangolo.com/tutorial/encoder/
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, FileResponse
 from urllib.parse import parse_qsl
 
 # ALL Exception
@@ -26,11 +26,12 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import Response
 
+from app.schema.base import BaseResp
+from app.config import ROOTPATH
 
 from typing import Optional, Any
-from app.schema.base import BaseResp
-
 from loguru import logger
+from pathlib import Path
 
 
 async def get_request_params(request: Request) -> dict:
@@ -116,6 +117,11 @@ def register_exception(app: FastAPI):
             request=request,
             content=BaseResp(code=0, msg=error_info),
         )
+
+    @app.exception_handler(status.HTTP_404_NOT_FOUND)
+    async def custom_404_handler(_, __):
+        favicon_path = Path(ROOTPATH, "favicon.ico").as_posix()
+        return FileResponse(favicon_path, status_code=404)
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(  # type: ignore

@@ -41,10 +41,12 @@ async def largeFileProxy(request: Request, url: str):
         logger.info(f"Proxy large stream File: {url} {stream_resp.status_code}")
 
     # must use **response** headers.
+    # ref: https://stackoverflow.com/questions/71395796/return-file-streaming-response-from-online-video-url-in-fastapi
     return StreamingResponse(
         stream_resp.aiter_raw(),
         status_code=stream_resp.status_code,
         # headers=stream_resp.headers,
+        media_type=stream_resp.headers["content-type"],
         headers=modifyResponseHeader(stream_resp.headers),
         background=BackgroundTask(stream_resp.aclose),
     )
