@@ -3,11 +3,12 @@ from datetime import datetime
 from loguru import logger
 from typing import List
 from typing import Optional
+import asyncio
 
 from app.config import settings
 from app.helper.ip_lookup import lookupIP
 from app.schema.base import AccessLog
-import asyncio
+from app.helper.onedrive_sdk import ODAuth, OnedriveSDK
 
 # client = AsyncIOMotorClient(settings.MONGODB_URL)
 # db = client["webproxy"]
@@ -63,7 +64,54 @@ class MongoDBCRUD:
         await self.database["access_log"].delete_many({})
 
 
+class ODAuthUseMongoDB(ODAuth):
+    """override ODAuth class to use mongodb as storage
+
+    NOTE: MUST achieve THE `get_or_set_access_token` and `get_or_set_refresh_token` method.
+
+    only one document in mongodb collection named "od_auth".
+    {"access_token": "xxx", "refresh_token": "xxx"}
+    """
+
+    def __init__(
+        self,
+        mongodb_client: AsyncIOMotorClient,
+    ) -> None:
+        super().__init__()
+        self.mongodb_client = mongodb_client
+
+    def __repr__(self) -> str:
+        return f"ODAuthUseMongoDB(access_token={self.access_token}, refresh_token={self.refresh_token})"
+
+    async def __get_or_set_token(
+        self, token_type: str, value: Optional[str] = None
+    ) -> Optional[str]:
+        """get or set token to mongodb
+        token_type: access_token or refresh_token
+        """
+        if value:
+            # set access_token to mongodb
+            # upsert means insert if not exist, update if exist.
+            await self.mongodb_client["webproxy"]["od_auth"].update_one(
+                {}, {"$set": {token_type: value}}, upsert=True
+            )
+            return value
+        document = await self.mongodb_client["webproxy"]["od_auth"].find_one()
+        return document.get(token_type, None) if document else None
+
+    async def get_or_set_access_token(
+        self, value: Optional[str] = None
+    ) -> Optional[str]:
+        return await self.__get_or_set_token("access_token", value)
+
+    async def get_or_set_refresh_token(
+        self, value: Optional[str] = None
+    ) -> Optional[str]:
+        return await self.__get_or_set_token("refresh_token", value)
+
+
 mongoCrud = MongoDBCRUD(settings.MONGODB_URL, "webproxy")
+od_mongodb_auth = ODAuthUseMongoDB(mongoCrud.client)
 
 # async def main():
 #     # await collection.insert_one({"name": "test"})

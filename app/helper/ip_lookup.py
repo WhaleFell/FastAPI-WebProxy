@@ -287,6 +287,7 @@ q = QQwry()
 if Path(ROOTPATH, "qqwry.dat").exists():
     q.load_file(Path(ROOTPATH, "qqwry.dat").as_posix())
 
+
 @retry(times=5)
 def download_qqwry_dat(url: str, save_path: Path):
     url = "https://raw.githubusercontent.com/FW27623/qqwry/main/qqwry.dat"
@@ -303,6 +304,8 @@ def download_qqwry_dat(url: str, save_path: Path):
 def setup_qqwry(update: bool = False):
     global q
     logger.success("Before app start")
+    if q.is_loaded():
+        return
     if update or not Path(ROOTPATH, "qqwry.dat").exists():
         logger.info("Download qqwry.dat...")
         download_qqwry_dat(settings.QQWRY_DOWNLOAD_URL, Path(ROOTPATH, "qqwry.dat"))
@@ -324,7 +327,6 @@ def lookupIP(ip: str) -> str:
     except Exception as e:
         logger.error(e)
         return "Unknown"
-
 
 
 if __name__ == "__main__":

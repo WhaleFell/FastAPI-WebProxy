@@ -38,6 +38,11 @@ class Settings(BaseSettings):
         "good": "QhTycby0GHJECm9h",
     }
 
+    # onedrive config
+    OD_CLIENT_ID: str = ""
+    OD_CLIENT_SECRET: str = ""
+    OD_REDIRECT_URI: str = "http://localhost/"
+
     model_config = SettingsConfigDict(case_sensitive=True)  # 区分大小写
 
 
