@@ -13,6 +13,7 @@ import asyncio
 from typing import Dict, Optional, Callable
 from pathlib import Path
 import inspect
+from app.helper.func import async_retry
 
 UA = "Mozilla/5.0 (Linux; Android 10; Pixel 3 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Mobile Safari/537.36"
 
@@ -213,6 +214,7 @@ class OnedriveSDK(object):
         if not state:
             raise Exception("Onedrive authorization is Invaild")
 
+    @async_retry(times=5)
     async def get_file_download_url(self, file_path: str) -> Optional[str]:
         # /drive/root:/path/to/file
         access_token = await self.__get_or_set_access_token()

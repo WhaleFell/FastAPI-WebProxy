@@ -62,5 +62,7 @@ async def get_od_file(
             raise HTTPException(status_code=404, detail="File not found")
     except Exception as e:
         logger.error("get onedrive file download url error: %s" % e)
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(
+            status_code=502, detail="get onedrive file download url error"
+        )
     return RedirectResponse(url=url)

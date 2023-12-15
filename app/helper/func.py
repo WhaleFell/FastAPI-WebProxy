@@ -30,3 +30,20 @@ def retry(times: int = 3):
         return wrapper
 
     return decorator
+
+
+# async retry decorator
+def async_retry(times: int = 3):
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            for i in range(times):
+                try:
+                    return await func(*args, **kwargs)
+                except Exception as e:
+                    logger.error(f"retry {i+1} times.reason: {e}")
+                    if i == times - 1:
+                        raise e
+
+        return wrapper
+
+    return decorator
