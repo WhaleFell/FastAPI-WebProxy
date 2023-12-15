@@ -225,6 +225,10 @@ class OnedriveSDK(object):
                 f"unauthorized to onedrive! please relogin or refresh file:{file_path}"
             )
             raise Exception("unauthorized to onedrive! please relgin or refresh")
+        if response.status_code == 404:
+            logger.error(f"file not found on onedrive! file:{file_path}")
+            return None
+        response.raise_for_status()
         data = response.json()
         download_url = data.get("@microsoft.graph.downloadUrl", None)
         logger.info(f"{file_path} download url:{download_url}")

@@ -8,6 +8,7 @@ from app.helper.mongodb_connect import od_mongodb_auth
 from app.helper.onedrive_sdk import OnedriveSDK
 from app.schema import BaseResp
 from app.config import settings
+from loguru import logger
 
 onedrive_sdk = OnedriveSDK(
     client_id=settings.OD_CLIENT_ID,
@@ -60,5 +61,6 @@ async def get_od_file(
         if not url:
             raise HTTPException(status_code=404, detail="File not found")
     except Exception as e:
+        logger.error("get onedrive file download url error: %s" % e)
         raise HTTPException(status_code=404, detail="File not found")
     return RedirectResponse(url=url)
