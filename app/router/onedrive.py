@@ -56,13 +56,8 @@ async def get_od_file(
         str, Query(title="onedrive file path", description="onedrive file path")
     ]
 ):
-    try:
-        url = await onedrive_sdk.get_file_download_url(path)
-        if not url:
-            raise HTTPException(status_code=404, detail="File not found")
-    except Exception as e:
-        logger.error("get onedrive file download url error: %s" % e)
-        raise HTTPException(
-            status_code=502, detail="get onedrive file download url error"
-        )
+    url = await onedrive_sdk.get_file_download_url(path)
+    if not url:
+        raise HTTPException(status_code=404, detail="File not found")
+
     return RedirectResponse(url=url)
