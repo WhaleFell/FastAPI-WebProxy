@@ -43,7 +43,10 @@ class Settings(BaseSettings):
     OD_CLIENT_SECRET: str = ""
     OD_REDIRECT_URI: str = "http://localhost/"
 
-    model_config = SettingsConfigDict(case_sensitive=True)  # 区分大小写
+    # case_sensitive means that the environment variable name is case sensitive
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=True
+    )
 
 
 settings = Settings()
