@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
+from loguru import logger
 
 from typing import Optional, Union
 from typing_extensions import Annotated
@@ -8,7 +9,7 @@ from app.helper.mongodb_connect import od_mongodb_auth
 from app.helper.onedrive_sdk import OnedriveSDK
 from app.schema import BaseResp
 from app.config import settings
-from loguru import logger
+from app.helper.webproxy_func import proxy_stream_file
 
 onedrive_sdk = OnedriveSDK(
     client_id=settings.OD_CLIENT_ID,
@@ -52,12 +53,19 @@ async def od_check() -> BaseResp[bool]:
 
 @router.get("/onedrive/file/")
 async def get_od_file(
+    request: Request,
     path: Annotated[
         str, Query(title="onedrive file path", description="onedrive file path")
-    ]
+    ],
+    proxy: Annotated[
+        bool, Query(title="proxy download file url for onedrive", description="proxy")
+    ] = False,
 ):
     url = await onedrive_sdk.get_file_download_url(path)
     if not url:
         raise HTTPException(status_code=404, detail="File not found")
+
+    if proxy:
+        return proxy_stream_file(request=request, target_url=url)
 
     return RedirectResponse(url=url)

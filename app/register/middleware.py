@@ -20,6 +20,11 @@ def register_middleware(app: FastAPI):
         if response.status_code == 404:
             return response
 
+        NOT_RECORD_PATH = ["/docs", "/onedrive/file/"]
+
+        if any([path in request.url._url for path in NOT_RECORD_PATH]):
+            return response
+
         # fastapi middleware run background task
         # https://stackoverflow.com/questions/72372029/fastapi-background-task-in-middleware
         response.background = BackgroundTask(
