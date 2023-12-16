@@ -44,4 +44,4 @@ def register_middleware(app: FastAPI):
     )
 
     # https://fastapi.tiangolo.com/advanced/middleware/#gzipmiddleware
-    app.add_middleware(GZipMiddleware, minimum_size=200)
+    # app.add_middleware(GZipMiddleware, minimum_size=200)
