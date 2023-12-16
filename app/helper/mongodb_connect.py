@@ -10,18 +10,16 @@ from app.helper.ip_lookup import lookupIP
 from app.schema.base import AccessLog
 from app.helper.onedrive_sdk import ODAuth, OnedriveSDK
 
-# client = AsyncIOMotorClient(settings.MONGODB_URL)
-# db = client["webproxy"]
-# collection = db["access_log"]
+client = AsyncIOMotorClient(settings.MONGODB_URL)
+# https://stackoverflow.com/questions/65542103/future-task-attached-to-a-different-loop
+# deploy in vercel.May cause attached to a different loop.
+client.get_io_loop = asyncio.get_event_loop
 
 
 class MongoDBCRUD:
-    def __init__(self, mongodb_url: str, database_name: str):
-        self.client = AsyncIOMotorClient(mongodb_url)
+    def __init__(self, client: AsyncIOMotorClient, database_name: str):
+        self.client = client
         self.database = self.client[database_name]
-        # https://stackoverflow.com/questions/65542103/future-task-attached-to-a-different-loop
-        # deploy in vercel.can cause attached to a different loop.
-        self.client.get_io_loop = asyncio.get_event_loop
 
     async def insert_one(self, collection_name: str, document: dict) -> bool:
         """insert one document with error handling"""
@@ -110,8 +108,8 @@ class ODAuthUseMongoDB(ODAuth):
         return await self.__get_or_set_token("refresh_token", value)
 
 
-mongoCrud = MongoDBCRUD(settings.MONGODB_URL, "webproxy")
-od_mongodb_auth = ODAuthUseMongoDB(mongoCrud.client)
+mongoCrud = MongoDBCRUD(client=client, database_name="webproxy")
+od_mongodb_auth = ODAuthUseMongoDB(mongodb_client=client)
 
 # async def main():
 #     # await collection.insert_one({"name": "test"})
