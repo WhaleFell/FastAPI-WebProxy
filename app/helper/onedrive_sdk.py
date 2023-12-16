@@ -233,7 +233,7 @@ class OnedriveSDK(object):
         response.raise_for_status()
         data = response.json()
         download_url = data.get("@microsoft.graph.downloadUrl", None)
-        logger.info(f"{file_path} download url:{download_url}")
+        # logger.debug(f"{file_path} download url:{download_url}")
         return download_url
 
 
