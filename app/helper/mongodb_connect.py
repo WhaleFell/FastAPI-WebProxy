@@ -12,6 +12,7 @@ from app.helper.onedrive_sdk import ODAuth, OnedriveSDK
 
 client = AsyncIOMotorClient(settings.MONGODB_URL)
 # https://stackoverflow.com/questions/65542103/future-task-attached-to-a-different-loop
+# https://github.com/encode/starlette/issues/1315
 # deploy in vercel.May cause attached to a different loop.
 client.get_io_loop = asyncio.get_event_loop
 
@@ -20,6 +21,7 @@ class MongoDBCRUD:
     def __init__(self, client: AsyncIOMotorClient, database_name: str):
         self.client = client
         self.database = self.client[database_name]
+        self.client.get_io_loop = asyncio.get_event_loop
 
     async def insert_one(self, collection_name: str, document: dict) -> bool:
         """insert one document with error handling"""
@@ -71,12 +73,11 @@ class ODAuthUseMongoDB(ODAuth):
     {"access_token": "xxx", "refresh_token": "xxx"}
     """
 
-    def __init__(
-        self,
-        mongodb_client: AsyncIOMotorClient,
-    ) -> None:
+    def __init__(self, mongodb_client: AsyncIOMotorClient, database_name: str) -> None:
         super().__init__()
         self.mongodb_client = mongodb_client
+        self.mongodb_client.get_io_loop = asyncio.get_event_loop
+        self.database = self.mongodb_client[database_name]
 
     def __repr__(self) -> str:
         return f"ODAuthUseMongoDB(access_token={self.access_token}, refresh_token={self.refresh_token})"
@@ -90,11 +91,11 @@ class ODAuthUseMongoDB(ODAuth):
         if value:
             # set access_token to mongodb
             # upsert means insert if not exist, update if exist.
-            await self.mongodb_client["webproxy"]["od_auth"].update_one(
+            await self.database["od_auth"].update_one(
                 {}, {"$set": {token_type: value}}, upsert=True
             )
             return value
-        document = await self.mongodb_client["webproxy"]["od_auth"].find_one()
+        document = await self.database["od_auth"].find_one()
         return document.get(token_type, None) if document else None
 
     async def get_or_set_access_token(
@@ -109,7 +110,7 @@ class ODAuthUseMongoDB(ODAuth):
 
 
 mongoCrud = MongoDBCRUD(client=client, database_name="webproxy")
-od_mongodb_auth = ODAuthUseMongoDB(mongodb_client=client)
+od_mongodb_auth = ODAuthUseMongoDB(mongodb_client=client, database_name="webproxy")
 
 # async def main():
 #     # await collection.insert_one({"name": "test"})
