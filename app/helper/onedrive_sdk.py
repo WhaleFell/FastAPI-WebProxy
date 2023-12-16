@@ -76,7 +76,9 @@ class OnedriveSDK(object):
             # "Authorization": "Bearer "+self.access_token,
         }
         self.onedrive_api = "https://graph.microsoft.com/v1.0"
-        self.client = httpx.AsyncClient(headers=self.header)
+        self.client = httpx.AsyncClient(
+            headers=self.header, limits=httpx.Limits(max_keepalive_connections=1000)
+        )
         self.od_auth = od_auth
 
         # use file cache token.
