@@ -63,7 +63,7 @@ async def get_request_params(request: Request) -> dict:
 def response_body(
     request: Request,
     content: Optional[BaseResp] = None,
-    status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
+    status_code: int = status.HTTP_208_ALREADY_REPORTED,
 ) -> ORJSONResponse:
     """Direct build response obj to return"""
 
