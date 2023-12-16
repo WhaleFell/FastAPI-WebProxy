@@ -284,8 +284,8 @@ class QQwry:
 
 q = QQwry()
 
-if Path(ROOTPATH, "qqwry.dat").exists():
-    q.load_file(Path(ROOTPATH, "qqwry.dat").as_posix())
+# if Path(ROOTPATH, "qqwry.dat").exists():
+#     q.load_file(Path(ROOTPATH, "qqwry.dat").as_posix())
 
 
 @retry(times=5)
@@ -318,6 +318,8 @@ def setup_qqwry(update: bool = False):
 
 def lookupIP(ip: str) -> str:
     global q
+    if not q.is_loaded():
+        q.load_file(Path(ROOTPATH, "qqwry.dat").as_posix())
     try:
         result = q.lookup(ip)
         if not result:
