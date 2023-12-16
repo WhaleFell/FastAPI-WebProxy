@@ -40,7 +40,7 @@ def async_retry(times: int = 3):
                 try:
                     return await func(*args, **kwargs)
                 except Exception as e:
-                    logger.error(f"retry {i+1} times.reason: {e}")
+                    # logger.error(f"retry {i+1} times.reason: {e}")
                     if i == times - 1:
                         raise e
 
