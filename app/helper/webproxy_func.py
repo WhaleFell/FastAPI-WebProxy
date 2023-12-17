@@ -299,11 +299,14 @@ async def proxy_web_content(request: Request, target_url: str) -> Response:
 
     content = proxy_response.content
 
-    # delete gzip header let starlette auto calculate
-    if "content-encoding" in proxy_response_headers:
-        del proxy_response_headers["content-encoding"]
-    if "content-length" in proxy_response_headers:
-        del proxy_response_headers["content-length"]
+    # must dispose gzip content.
+    # because httpx will auto decompress gzip content.
+    content_encoding = proxy_response_headers.get("content-encoding", "")
+    if "gzip" in content_encoding:
+        content = gzip.compress(content)
+        # delete content-length header let starlette auto calculate
+        if "content-length" in proxy_response_headers:
+            del proxy_response_headers["content-length"]
 
     return Response(
         content=content,
