@@ -300,8 +300,10 @@ async def proxy_web_content(request: Request, target_url: str) -> Response:
     content = proxy_response.content
 
     # delete gzip header let starlette auto calculate
-    del proxy_response_headers["content-encoding"]
-    del proxy_response_headers["content-length"]
+    if "content-encoding" in proxy_response_headers:
+        del proxy_response_headers["content-encoding"]
+    if "content-length" in proxy_response_headers:
+        del proxy_response_headers["content-length"]
 
     return Response(
         content=content,
