@@ -1,11 +1,12 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request, FastAPI
 from starlette.background import BackgroundTask
+from fastapi.middleware.gzip import GZipMiddleware
 import time
 
 from app.helper.mongodb_connect import mongoCrud
 from app.helper.func import get_client_ip
-from fastapi.middleware.gzip import GZipMiddleware
+from app.config import settings
 
 
 def register_middleware(app: FastAPI):
@@ -16,20 +17,25 @@ def register_middleware(app: FastAPI):
         process_time = time.time() - start_time
         response.headers["X-Process-Time"] = str(process_time)
 
+        ip = get_client_ip(request)
+
         # don't record 404 error
         if response.status_code == 404:
             return response
 
-        NOT_RECORD_PATH = ["/docs", "/onedrive/file/"]
+        # don't record route path
+        if request.url.path in settings.NOT_RECORD_PATH:
+            return response
 
-        if any([path in request.url._url for path in NOT_RECORD_PATH]):
+        # don't record special ip
+        if ip in settings.NOT_RECORD_IP:
             return response
 
         # fastapi middleware run background task
         # https://stackoverflow.com/questions/72372029/fastapi-background-task-in-middleware
         response.background = BackgroundTask(
             mongoCrud.newAccessLog,
-            get_client_ip(request),
+            ip,
             request.url._url,
             response.status_code,
         )
@@ -44,4 +50,4 @@ def register_middleware(app: FastAPI):
     )
 
     # https://fastapi.tiangolo.com/advanced/middleware/#gzipmiddleware
-    # app.add_middleware(GZipMiddleware, minimum_size=200)
+    app.add_middleware(GZipMiddleware, minimum_size=200)

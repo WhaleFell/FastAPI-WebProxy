@@ -49,7 +49,7 @@ async def checkLog(
         return BaseResp[List[AccessLog]](code=0, msg="no log", data=result)
 
 
-@router.get(path="/log/rm")
+@router.get(path="/log/rm/")
 async def rmLog(
     key: Annotated[str, Query(title="password", description="remove log password")]
 ) -> BaseResp[bool]:

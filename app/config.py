@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     OD_CLIENT_SECRET: str = ""
     OD_REDIRECT_URI: str = "http://localhost/"
 
+    # Not record setting
+    NOT_RECORD_PATH: List[str] = ["/favicon.ico", "/onedrive/file/", "/"]
+    NOT_RECORD_IP: List[str] = ["216.144.248.27"]
+
     # case_sensitive means that the environment variable name is case sensitive
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=True
