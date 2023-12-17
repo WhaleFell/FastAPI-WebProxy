@@ -66,6 +66,12 @@ async def get_od_file(
         raise HTTPException(status_code=404, detail="File not found")
 
     if proxy:
-        return proxy_stream_file(request=request, target_url=url)
+        stream_response = await proxy_stream_file(request=request, target_url=url)
+        # modify header Content-Disposition in order to open file in browser
+        header_content_disposition = stream_response.headers["Content-Disposition"]
+        stream_response.headers[
+            "Content-Disposition"
+        ] = header_content_disposition.replace("attachment", "inline")
+        return stream_response
 
     return RedirectResponse(url=url)
