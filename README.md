@@ -42,3 +42,17 @@ uvicorn app.main:app --port 8000 --reload
 
 3. ip info: (use qqwry ip database)
     - url: `/ip/?ip=1.1.1.1` method: GET desc: get ip info if without ip param will get client ip info.
+
+## Notice
+
+source: https://github.com/vercel/vercel/issues/8477
+
+Because FastAPI is ASGI framework,so it have some problem when deploy to vercel.
+
+vercel ASGI runtime create an new event loop on each request.So when use some async module will create new event loop in sigle request like `aiohttp` and `httpx` will raise error.
+
+```shell
+2023-12-19 08:50:21.426 | ERROR    | app.helper.func:wrapper:43 - retry 1 times.reason: Task <Task pending name='starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro' coro=<BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro() running at /var/task/starlette/middleware/base.py:70> cb=[TaskGroup._spawn.<locals>.task_done() at /var/task/anyio/_backends/_asyncio.py:661]> got Future <Future pending> attached to a different loop
+```
+
+one solution way is add a retry decorator to any use async module function.
