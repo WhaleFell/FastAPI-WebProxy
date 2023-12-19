@@ -9,7 +9,6 @@ from PIL import Image
 from io import BytesIO
 import io
 import httpx
-from app.helper.webproxy_func import GlobalHttpxClient
 from app.config import ROOTPATH
 from pathlib import Path
 
@@ -18,10 +17,14 @@ user_agent = (
     "(KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"
 )
 
+client = httpx.AsyncClient(
+    headers={"User-Agent": user_agent}, limits=httpx.Limits(max_connections=1024)
+)
+
 
 async def get_pic_bytes(url) -> BytesIO:
     """Get image bytes from url"""
-    resp = await GlobalHttpxClient.get(url, headers={"User-Agent": user_agent})
+    resp = await client.get(url)
     pic = BytesIO(resp.content)
     return pic
 
