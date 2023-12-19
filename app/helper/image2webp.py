@@ -11,6 +11,7 @@ import io
 import httpx
 from app.config import ROOTPATH
 from pathlib import Path
+from app.helper.func import async_retry
 
 user_agent = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -20,6 +21,7 @@ user_agent = (
 client = httpx.AsyncClient(headers={"User-Agent": user_agent})
 
 
+@async_retry(3)
 async def get_pic_bytes(url) -> BytesIO:
     """Get image bytes from url"""
     resp = await client.get(url)
