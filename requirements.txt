@@ -8,3 +8,4 @@ orjson
 motor
 motor[srv]
 markdown2[all]
+pillow

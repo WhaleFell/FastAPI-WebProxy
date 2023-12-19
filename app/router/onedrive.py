@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query, HTTPException, Request
-from fastapi.responses import RedirectResponse, Response
+from fastapi.responses import RedirectResponse, Response, FileResponse
 from loguru import logger
 
 from typing import Optional, Union
@@ -10,6 +10,7 @@ from app.helper.onedrive_sdk import OnedriveSDK
 from app.schema import BaseResp
 from app.config import settings
 from app.helper.webproxy_func import proxy_stream_file
+from app.helper.image2webp import pic_2_webp, get_pic_bytes
 
 onedrive_sdk = OnedriveSDK(
     client_id=settings.OD_CLIENT_ID,
@@ -60,10 +61,23 @@ async def get_od_file(
     proxy: Annotated[
         bool, Query(title="proxy download file url for onedrive", description="proxy")
     ] = False,
+    webp: Annotated[
+        bool, Query(title="convert image to webp and compress", description="webp")
+    ] = False,
 ):
+    filename = path.split("/")[-1]
     url = await onedrive_sdk.get_file_download_url(path)
     if not url:
         raise HTTPException(status_code=404, detail="File not found")
+
+    if webp:
+        pic = await get_pic_bytes(url)
+        webp_bytes = pic_2_webp(pic)
+        return Response(
+            content=webp_bytes.read(),
+            media_type="image/webp",
+            headers={"Content-Disposition": "inline", "filename": f"{filename}"},
+        )
 
     if proxy:
         stream_response = await proxy_stream_file(request=request, target_url=url)
