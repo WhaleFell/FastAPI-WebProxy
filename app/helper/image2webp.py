@@ -17,15 +17,14 @@ user_agent = (
     "(KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"
 )
 
-client = httpx.AsyncClient(
-    headers={"User-Agent": user_agent}, limits=httpx.Limits(max_connections=1024)
-)
+client = httpx.AsyncClient(headers={"User-Agent": user_agent})
 
 
 async def get_pic_bytes(url) -> BytesIO:
     """Get image bytes from url"""
     resp = await client.get(url)
     pic = BytesIO(resp.content)
+    await resp.aclose()
     return pic
 
 

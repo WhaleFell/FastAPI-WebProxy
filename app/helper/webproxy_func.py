@@ -21,9 +21,7 @@ from typing import (
 )
 
 # # NOTE: client must be a global variable.outside of the function.
-GlobalHttpxClient = httpx.AsyncClient(
-    verify=False, timeout=10, limits=httpx.Limits(max_keepalive_connections=1000)
-)
+GlobalHttpxClient = httpx.AsyncClient(verify=False, timeout=10)
 
 
 class _ConnectionHeaderParseResult(NamedTuple):
@@ -307,6 +305,8 @@ async def proxy_web_content(request: Request, target_url: str) -> Response:
         # delete content-length header let starlette auto calculate
         if "content-length" in proxy_response_headers:
             del proxy_response_headers["content-length"]
+
+    await proxy_response.aclose()
 
     return Response(
         content=content,
