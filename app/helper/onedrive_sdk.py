@@ -11,6 +11,7 @@ from loguru import logger
 import urllib.parse
 import asyncio
 from typing import Dict, Optional, Callable
+from typing_extensions import override
 from pathlib import Path
 import inspect
 from app.helper.func import async_retry
@@ -40,6 +41,30 @@ class ODAuth(object):
         """get or set access_token
         if value is not None, set access_token to value.
         """
+        raise NotImplementedError
+
+    def get_or_set_refresh_token(self, value: Optional[str] = None) -> Optional[str]:
+        """get or set refresh_token
+        if value is not None, set refresh_token to value.
+        """
+        raise NotImplementedError
+
+
+class ODAuthFile(ODAuth):
+    """extand onedrive auth class
+    File cache access_token and refresh_token.
+    """
+
+    def __init__(
+        self, access_token: Optional[str] = None, refresh_token: Optional[str] = None
+    ) -> None:
+        super().__init__(access_token, refresh_token)
+
+    @override
+    def get_or_set_access_token(self, value: Optional[str] = None) -> Optional[str]:
+        """get or set access_token
+        if value is not None, set access_token to value.
+        """
         if not value:
             if Path(_ROOT_PATH, ".onedriveAccess").exists():
                 return Path(_ROOT_PATH, ".onedriveAccess").read_text()
@@ -47,6 +72,7 @@ class ODAuth(object):
             Path(_ROOT_PATH, ".onedriveAccess").write_text(value)
             return value
 
+    @override
     def get_or_set_refresh_token(self, value: Optional[str] = None) -> Optional[str]:
         """get or set refresh_token
         if value is not None, set refresh_token to value.
@@ -239,7 +265,7 @@ class OnedriveSDK(object):
         return download_url
 
 
-# od_auth = ODAuth()
+# od_auth = ODAuthFile()
 # # from app.helper.mongodb_connect import od_mongodb_auth
 # # from app.config import settings
 
