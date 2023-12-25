@@ -84,10 +84,12 @@ async def get_od_file(
     if proxy:
         stream_response = await proxy_stream_file(request=request, target_url=url)
         # modify header Content-Disposition in order to open file in browser
-        header_content_disposition = stream_response.headers["Content-Disposition"]
-        stream_response.headers[
-            "Content-Disposition"
-        ] = header_content_disposition.replace("attachment", "inline")
+        if "Content-Disposition" in stream_response.headers:
+            header_content_disposition = stream_response.headers["Content-Disposition"]
+            stream_response.headers[
+                "Content-Disposition"
+            ] = header_content_disposition.replace("attachment", "inline")
+
         return stream_response
 
     return RedirectResponse(url=url)

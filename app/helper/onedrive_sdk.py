@@ -103,7 +103,7 @@ class OnedriveSDK(object):
         }
         self.onedrive_api = "https://graph.microsoft.com/v1.0"
         self.client = httpx.AsyncClient(
-            headers=self.header, limits=httpx.Limits(max_keepalive_connections=1000)
+            headers=self.header, limits=httpx.Limits(max_keepalive_connections=1000),verify=False,timeout=8
         )
         self.od_auth = od_auth
 
