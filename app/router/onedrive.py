@@ -11,6 +11,7 @@ from app.schema import BaseResp
 from app.config import settings
 from app.helper.webproxy_func import proxy_stream_file
 from app.helper.image2webp import pic_2_webp, get_pic_bytes
+from app.helper.request import GLOBAL_ASYNC_CLIENT
 
 onedrive_sdk = OnedriveSDK(
     client_id=settings.OD_CLIENT_ID,
@@ -18,6 +19,7 @@ onedrive_sdk = OnedriveSDK(
     od_auth=od_mongodb_auth,
     redirect_uri=settings.OD_REDIRECT_URI,
 )
+onedrive_sdk.client = GLOBAL_ASYNC_CLIENT
 
 router = APIRouter()
 

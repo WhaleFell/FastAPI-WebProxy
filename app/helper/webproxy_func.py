@@ -21,7 +21,7 @@ from typing import (
 )
 
 # # NOTE: client must be a global variable.outside of the function.
-GlobalHttpxClient = httpx.AsyncClient(verify=False, timeout=10)
+GlobalHttpxClient = httpx.AsyncClient(verify=False, timeout=8)
 
 
 class _ConnectionHeaderParseResult(NamedTuple):

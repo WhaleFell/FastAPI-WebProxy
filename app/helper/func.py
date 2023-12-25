@@ -2,6 +2,7 @@ from fastapi import Request
 from typing import Optional
 from loguru import logger
 import httpx
+import traceback
 
 
 def get_client_ip(request: Request) -> str:
@@ -40,7 +41,15 @@ def async_retry(times: int = 3):
                 try:
                     return await func(*args, **kwargs)
                 except Exception as e:
-                    logger.error(f"retry {i+1} times.reason: {e}")
+                    # logger.error(f"retry {i+1} times.reason: {e}")
+                    # logger.exception("Track")
+                    # DEBUG
+                    from app.helper.mongodb_connect import mongoCrud
+
+                    await mongoCrud.insert_one(
+                        collection_name="traceback",
+                        document={"log": traceback.format_exc()},
+                    )
                     if i == times - 1:
                         raise e
 

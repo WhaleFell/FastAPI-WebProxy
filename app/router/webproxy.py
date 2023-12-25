@@ -11,6 +11,9 @@ from app.helper.webproxy_func import (
     proxy_web_content,
 )
 
+from app.helper.request import GLOBAL_ASYNC_CLIENT
+
+
 router = APIRouter()
 
 
