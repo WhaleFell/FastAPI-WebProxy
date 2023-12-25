@@ -1,17 +1,13 @@
 from fastapi import APIRouter, Request, Response, Query
-from fastapi.responses import PlainTextResponse, StreamingResponse
 from loguru import logger
-from typing import Optional, Annotated
+from typing import Annotated
 
-from typing import Union
 
 from app.helper.webproxy_func import (
     is_valid_domain,
     proxy_stream_file,
     proxy_web_content,
 )
-
-from app.helper.request import GLOBAL_ASYNC_CLIENT
 
 
 router = APIRouter()

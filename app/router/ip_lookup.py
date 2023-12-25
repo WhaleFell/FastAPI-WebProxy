@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Response, HTTPException
+from fastapi import APIRouter, Request, HTTPException
 from fastapi import Query
 from typing import Optional
 from typing_extensions import Annotated
