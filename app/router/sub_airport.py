@@ -20,7 +20,7 @@ SUB_TYPES = {
 
 def replace_content(text: str, request: Request, type_: str = "clash") -> str:
     if type_ == "clash":
-        text = text.replace("官网 https://1100.gg（非节点）", "落落公益机场,自由勇敢翻越高墙,民主中国！")
+        text = text.replace("官网 https://1100.gg（非节点）", "落落定制高级机场,3000CNY/月")
         lines = text.split("\n")
         new_lines = [line for line in lines if not line.strip().startswith("#")]
         text = "\n".join(new_lines)
@@ -28,7 +28,7 @@ def replace_content(text: str, request: Request, type_: str = "clash") -> str:
         ip = get_client_ip(request)
 
         banner = f"""
-# 落落公益机场,自由勇敢翻越高墙,民主中国！
+# 落落定制高级机场,300CNY/月
 # Generated time: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 # URL: {request.url._url}
 # IP: {ip} {lookupIP(ip)} \n
