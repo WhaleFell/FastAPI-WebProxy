@@ -44,11 +44,12 @@ def async_retry(times: int = 3):
                     logger.error(f"retry {i+1} times.reason: {e}")
                     # logger.exception("Track")
                     # DEBUG
-                    # from app.helper.mongodb_connect import mongoCrud
-                    # await mongoCrud.insert_one(
-                    #     collection_name="traceback",
-                    #     document={"log": traceback.format_exc()},
-                    # )
+                    from app.helper.mongodb_connect import mongoCrud
+
+                    await mongoCrud.insert_one(
+                        collection_name="traceback",
+                        document={"log": traceback.format_exc()},
+                    )
                     if i == times - 1:
                         raise e
 

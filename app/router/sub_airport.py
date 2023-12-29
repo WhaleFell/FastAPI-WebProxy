@@ -64,8 +64,6 @@ async def sub(
     if not key:
         return PlainTextResponse(content=f"Not Found {name} config", status_code=400)
 
-    sub_type = SUB_TYPES.get(type, "clash=1")
-
     content = await get_airport_sub_content(key, request, type)
 
     return PlainTextResponse(content=content)
