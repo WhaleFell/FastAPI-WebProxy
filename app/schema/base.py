@@ -5,9 +5,10 @@
 # API 基模型
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
-from typing import Optional, Any
+from typing import Optional, Any, Annotated
 from pydantic import ConfigDict
 from datetime import datetime, timedelta, timezone
+from fastapi import Query
 
 # Pydantic Generic Type 泛型
 # reference:
@@ -45,3 +46,14 @@ class AccessLog(BaseModel):
     @field_validator("time")
     def time_to_utc8(cls, v: datetime) -> datetime:
         return v + timedelta(hours=8)
+
+
+class GPSUploadData(BaseModel):
+    """GPS upload data model"""
+
+    latitude: Annotated[float, Query()]  # 纬度
+    longitude: Annotated[float, Query()]  # 经度
+    altitude: Annotated[float, Query()]  # 海拔
+    speed: Annotated[float, Query()]  # 速度
+    GPSTime: Annotated[datetime, Query()]  # GPS时间 由设备提供
+    uploadTime: Annotated[datetime, Query(default=datetime.now())]  # 上传时间 由设备提供
