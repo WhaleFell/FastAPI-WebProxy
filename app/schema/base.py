@@ -51,9 +51,14 @@ class AccessLog(BaseModel):
 class GPSUploadData(BaseModel):
     """GPS upload data model"""
 
-    latitude: Annotated[float, Query()]  # 纬度
-    longitude: Annotated[float, Query()]  # 经度
-    altitude: Annotated[float, Query()]  # 海拔
-    speed: Annotated[float, Query()]  # 速度
-    GPSTime: Annotated[datetime, Query()]  # GPS时间 由设备提供
-    uploadTime: Annotated[datetime, Query(default=datetime.now())]  # 上传时间 由设备提供
+    latitude: Annotated[float, Query(title="GPS Latitude")]  # 纬度
+    longitude: Annotated[float, Query(title="GPS Longitude")]  # 经度
+    altitude: Annotated[float | None, Query(title="GPS Altitude")] = 0  # 海拔
+    speed: Annotated[float | None, Query(title="GPS Speed")] = 0  # 速度
+    GPSTime: Annotated[
+        datetime | None, Query(title="GPS Time", default_factory=datetime.now)
+    ]  # GPS时间
+
+    uploadTime: Annotated[
+        datetime | None, Query(title="Upload Time", default_factory=datetime.now)
+    ]  # 上传时间

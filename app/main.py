@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+import pprint
 from loguru import logger
 from contextlib import asynccontextmanager
 
@@ -13,6 +13,12 @@ from app.helper.ip_lookup import setup_qqwry
 async def lifespan(app: FastAPI):
     # before app start
     setup_qqwry(update=not settings.DEV)
+    logger.info(
+        f"""
+FastAPI CONIG:
+{pprint.pformat(settings.model_dump())}
+"""
+    )
     yield
     # after app stop
     logger.success("After app stop")
@@ -36,12 +42,14 @@ from app.router import webproxy
 from app.router import index
 from app.router import sub_airport
 from app.router import onedrive
+from app.router import gps_upload
 
 app.include_router(ip_lookup.router, tags=["ip_lookup"])
 app.include_router(webproxy.router, tags=["webproxy"])
 app.include_router(index.router, tags=["access_log"])
 app.include_router(sub_airport.router, tags=["sub_airport"])
 app.include_router(onedrive.router, tags=["onedrive"])
+app.include_router(gps_upload.router, tags=["gps_upload"])
 
 # register middleware
 from app.register.middleware import register_middleware

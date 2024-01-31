@@ -8,7 +8,7 @@ from pathlib import Path
 # from markdown2 import markdown
 
 from app.schema.base import AccessLog, BaseResp
-from app.helper.mongodb_connect import mongoCrud
+from app.helper.mongodb_connect import accessLog
 from app.config import settings, ROOTPATH
 
 router = APIRouter()
@@ -42,7 +42,7 @@ async def checkLog(
     ] = None,
 ) -> BaseResp[List[AccessLog]]:
     """check log"""
-    result = await mongoCrud.searchAccessLog(skip=skip, limit=limit, include_keyword=kw)
+    result = await accessLog.searchAccessLog(skip=skip, limit=limit, include_keyword=kw)
 
     if result:
         return BaseResp[List[AccessLog]](code=1, msg="success", data=result)
@@ -56,6 +56,6 @@ async def rmLog(
 ) -> BaseResp[bool]:
     """remove all log"""
     if key == settings.PASSWORD:
-        await mongoCrud.rmAllAccessLog()
+        await accessLog.rmAllAccessLog()
         return BaseResp[bool](code=1, msg="success rm all log", data=True)
     return BaseResp[bool](code=0, msg="password error", data=False)

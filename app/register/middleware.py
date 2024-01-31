@@ -4,7 +4,7 @@ from starlette.background import BackgroundTask
 from fastapi.middleware.gzip import GZipMiddleware
 import time
 
-from app.helper.mongodb_connect import mongoCrud
+from app.helper.mongodb_connect import accessLog
 from app.helper.func import get_client_ip
 from app.config import settings
 
@@ -34,7 +34,7 @@ def register_middleware(app: FastAPI):
         # fastapi middleware run background task
         # https://stackoverflow.com/questions/72372029/fastapi-background-task-in-middleware
         response.background = BackgroundTask(
-            mongoCrud.newAccessLog,
+            accessLog.newAccessLog,
             ip,
             request.url._url,
             response.status_code,

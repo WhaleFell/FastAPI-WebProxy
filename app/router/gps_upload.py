@@ -8,7 +8,7 @@
 @Desc    :   GPS data upload
 """
 from fastapi import APIRouter, Request, Response, HTTPException
-from fastapi import Query
+from fastapi import Query, Body
 from fastapi.responses import PlainTextResponse, HTMLResponse, FileResponse
 from typing import Optional, List
 from typing_extensions import Annotated
@@ -21,5 +21,5 @@ router = APIRouter()
 
 
 @router.post("/gps/upload/")
-async def gps_upload_route():
-    pass
+async def gps_upload_route(data: GPSUploadData) -> BaseResp[GPSUploadData]:
+    return BaseResp[GPSUploadData](msg="upload success!", data=data)

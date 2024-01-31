@@ -13,6 +13,9 @@ In Windows.
 ```shell
 # build python virtual envirement
 python -m venv ./venv
+# If your have multiple python version,use specific python version to build virtual envirement
+py --list # list all python version
+py -3.11 -m venv ./venv
 
 # Set Powershell Limited
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser

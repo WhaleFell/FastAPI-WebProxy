@@ -32,7 +32,11 @@ class ODAuth(object):
     """
 
     def __init__(
-        self, access_token: Optional[str] = None, refresh_token: Optional[str] = None
+        self,
+        access_token: Optional[str] = None,
+        refresh_token: Optional[str] = None,
+        *args,
+        **kwargs,
     ) -> None:
         self.access_token = access_token
         self.refresh_token = refresh_token
@@ -56,7 +60,11 @@ class ODAuthFile(ODAuth):
     """
 
     def __init__(
-        self, access_token: Optional[str] = None, refresh_token: Optional[str] = None
+        self,
+        access_token: Optional[str] = None,
+        refresh_token: Optional[str] = None,
+        *args,
+        **kwargs,
     ) -> None:
         super().__init__(access_token, refresh_token)
 
@@ -103,7 +111,10 @@ class OnedriveSDK(object):
         }
         self.onedrive_api = "https://graph.microsoft.com/v1.0"
         self.client = httpx.AsyncClient(
-            headers=self.header, limits=httpx.Limits(max_keepalive_connections=1000),verify=False,timeout=8
+            headers=self.header,
+            limits=httpx.Limits(max_keepalive_connections=1000),
+            verify=False,
+            timeout=8,
         )
         self.od_auth = od_auth
 
