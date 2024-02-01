@@ -42,7 +42,7 @@ class MongoDBCRUD:
             logger.error("remove collection error: %s" % e)
             return False
 
-    async def rm_database(self, database_name: str | None) -> bool:
+    async def rm_database(self, database_name: Optional[str] = None) -> bool:
         """remove database"""
         try:
             if not database_name:
