@@ -17,9 +17,13 @@ client = AsyncIOMotorClient(settings.MONGODB_URL)
 # deploy in vercel. May cause attached to a different loop.
 client.get_io_loop = asyncio.get_event_loop
 
+# Python multiple inheritance design pattern
+# https://stackoverflow.com/questions/3277367/how-does-pythons-super-work-with-multiple-inheritance
 
-class MongoDBCRUD:
+
+class MongoDBCRUD(object):
     def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.client = client
         self.database = self.client[database_name]
         self.client.get_io_loop = asyncio.get_event_loop
@@ -110,17 +114,25 @@ class ODAuthUseMongoDB(ODAuth, MongoDBCRUD):
     collection_name = "od_auth"
 
     def __init__(
-        self, mongodb_client: AsyncIOMotorClient, database_name: str, *args, **kwargs
+        self,
+        mongodb_client: AsyncIOMotorClient,
+        database_name: str,
+        *args,
+        **kwargs,
     ) -> None:
         super().__init__(
-            client=mongodb_client, database_name=database_name, *args, **kwargs
+            client=mongodb_client,
+            database_name=database_name,
+            *args,
+            **kwargs,
         )
+        logger.info(f"ODAuthUseMongoDB init: {self}")
         # self.mongodb_client = mongodb_client
         # self.mongodb_client.get_io_loop = asyncio.get_event_loop
         # self.database = self.mongodb_client[database_name]
 
-    def __repr__(self) -> str:
-        return f"ODAuthUseMongoDB(access_token={self.access_token}, refresh_token={self.refresh_token})"
+    # def __repr__(self) -> str:
+    #     return f"ODAuthUseMongoDB(access_token={self.access_token}, refresh_token={self.refresh_token})"
 
     async def __get_or_set_token(
         self, token_type: str, value: Optional[str] = None
@@ -128,6 +140,7 @@ class ODAuthUseMongoDB(ODAuth, MongoDBCRUD):
         """get or set token to mongodb
         token_type: access_token or refresh_token
         """
+        print(self.database)
         if value:
             # set access_token to mongodb
             # upsert means insert if not exist, update if exist.
@@ -138,11 +151,13 @@ class ODAuthUseMongoDB(ODAuth, MongoDBCRUD):
         document = await self.database[self.collection_name].find_one()
         return document.get(token_type, None) if document else None
 
+    @override
     async def get_or_set_access_token(
         self, value: Optional[str] = None
     ) -> Optional[str]:
         return await self.__get_or_set_token("access_token", value)
 
+    @override
     async def get_or_set_refresh_token(
         self, value: Optional[str] = None
     ) -> Optional[str]:
