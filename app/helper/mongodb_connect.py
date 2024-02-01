@@ -1,5 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-from datetime import datetime
+from datetime import datetime, date
 from loguru import logger
 from typing import List, Optional
 from typing_extensions import override
@@ -7,8 +7,9 @@ import asyncio
 
 from app.config import settings
 from app.helper.ip_lookup import lookupIP
-from app.schema.base import AccessLog
-from app.helper.onedrive_sdk import ODAuth, OnedriveSDK
+from app.schema.base import AccessLog, GPSUploadData
+from app.helper.onedrive_sdk import ODAuth
+from app.helper.func import getBeijingTime, getTimestamp
 
 client = AsyncIOMotorClient(settings.MONGODB_URL)
 # https://stackoverflow.com/questions/65542103/future-task-attached-to-a-different-loop
@@ -27,7 +28,7 @@ class MongoDBCRUD:
         """insert one document with error handling"""
         try:
             result = await self.database[collection_name].insert_one(document=document)
-            return result.inserted_id
+            return True if result.acknowledged else False
         except Exception as e:
             logger.error("insert one document error: %s" % e)
             return False
@@ -39,6 +40,17 @@ class MongoDBCRUD:
             return True
         except Exception as e:
             logger.error("remove collection error: %s" % e)
+            return False
+
+    async def rm_database(self, database_name: str | None) -> bool:
+        """remove database"""
+        try:
+            if not database_name:
+                database_name = self.database.name
+            await self.client.drop_database(database_name)
+            return True
+        except Exception as e:
+            logger.error("remove database error: %s" % e)
             return False
 
 
@@ -140,17 +152,55 @@ class ODAuthUseMongoDB(ODAuth, MongoDBCRUD):
 class GPSUseMongoDB(MongoDBCRUD):
     """GPS upload data use mongodb as storage
 
-    only one document in mongodb collection named "gps_data".
+    collection name `gps_data`
+
+    document example:
     {"latitude": 0.0, "longitude": 0.0, "altitude": 0.0, "speed": 0.0, "GPSTime": "2021-09-01T00:00:00.000Z", "uploadTime": "2021-09-01T00:00:00.000Z"}
     """
+
+    collection_name = "gps_data"
 
     def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):
         super().__init__(client, database_name, *args, **kwargs)
 
+    async def insert_GPS_data(self, GPS_data: GPSUploadData) -> bool:
+        """insert GPS data"""
+        doc = GPS_data.model_dump()
+        return await self.insert_one(collection_name=self.collection_name, document=doc)
 
-mongoCrud = MongoDBCRUD(client=client, database_name="webproxy")
-accessLog = AccessLogUseMongoDB(client=client, database_name="webproxy")
-od_mongodb_auth = ODAuthUseMongoDB(mongodb_client=client, database_name="webproxy")
+    async def query_GPS_by_time(
+        self,
+        limit: int = 200,
+        skip: int = 0,
+        start_timestamp: Optional[int] = None,
+        end_timestamp: Optional[int] = None,
+    ) -> List[GPSUploadData]:
+        """query GPS data by time"""
+        query = {"uploadTimestamp": {"$gte": 0, "$lte": getTimestamp()}}
+        if start_timestamp:
+            query["uploadTimestamp"]["$gte"] = start_timestamp
+        if end_timestamp:
+            query["uploadTimestamp"]["$lte"] = end_timestamp
+
+        cursor = (
+            self.database[self.collection_name]
+            .find(query)
+            .skip(skip)
+            .limit(limit)
+            .sort("uploadTime", direction=-1)
+        )
+        result = []
+        async for document in cursor:
+            result.append(GPSUploadData(**document))
+        return result
+
+
+mongoCrud = MongoDBCRUD(client=client, database_name=settings.MONGODB_DATABASE)
+accessLog = AccessLogUseMongoDB(client=client, database_name=settings.MONGODB_DATABASE)
+od_mongodb_auth = ODAuthUseMongoDB(
+    mongodb_client=client, database_name=settings.MONGODB_DATABASE
+)
+gps_mongodb = GPSUseMongoDB(client=client, database_name=settings.MONGODB_DATABASE)
 
 # async def main():
 #     # await collection.insert_one({"name": "test"})

@@ -37,14 +37,14 @@ from app.register.exception import register_exception
 register_exception(app)
 
 # register router
-from app.router import ip_lookup
+from app.router import ip_lookup_route
 from app.router import webproxy
 from app.router import index
 from app.router import sub_airport
 from app.router import onedrive
 from app.router import gps_upload
 
-app.include_router(ip_lookup.router, tags=["ip_lookup"])
+app.include_router(ip_lookup_route.router, tags=["ip_lookup"])
 app.include_router(webproxy.router, tags=["webproxy"])
 app.include_router(index.router, tags=["access_log"])
 app.include_router(sub_airport.router, tags=["sub_airport"])

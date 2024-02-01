@@ -1,8 +1,6 @@
 from fastapi import Request
-from typing import Optional
 from loguru import logger
-import httpx
-import traceback
+from datetime import datetime, timezone, timedelta
 
 
 def get_client_ip(request: Request) -> str:
@@ -56,3 +54,23 @@ def async_retry(times: int = 3):
         return wrapper
 
     return decorator
+
+
+# get Beijing Time UTC+8
+def getBeijingTime() -> datetime:
+    return datetime.now(tz=timezone(timedelta(hours=8)))
+
+
+# get timestamp
+def getTimestamp() -> int:
+    return int(datetime.now().timestamp())
+
+
+# timestamp convert to datetime USE UTC+8
+def timestamp_to_datetime(timestamp: int) -> datetime:
+    return datetime.fromtimestamp(timestamp, tz=timezone(timedelta(hours=8)))
+
+
+# UTC+8 datetime convert to timestamp
+def datetime_to_timestamp(dt: datetime) -> int:
+    return int(dt.timestamp())

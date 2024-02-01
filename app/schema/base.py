@@ -7,14 +7,15 @@
 from pydantic import BaseModel, Field, ValidationError, field_validator
 from typing import Optional, Any, Annotated
 from pydantic import ConfigDict
-from datetime import datetime, timedelta, timezone
-from fastapi import Query
+from datetime import datetime, timedelta, date
+from fastapi import Query, Body
 
 # Pydantic Generic Type 泛型
 # reference:
 # 1. https://blog.csdn.net/qq_45668004/article/details/113730684
 # 2. https://docs.pydantic.dev/2.4/concepts/models/#generic-models
 from typing import Generic, TypeVar
+from app.helper.func import getTimestamp
 
 T = TypeVar("T")
 
@@ -51,14 +52,18 @@ class AccessLog(BaseModel):
 class GPSUploadData(BaseModel):
     """GPS upload data model"""
 
-    latitude: Annotated[float, Query(title="GPS Latitude")]  # 纬度
-    longitude: Annotated[float, Query(title="GPS Longitude")]  # 经度
-    altitude: Annotated[float | None, Query(title="GPS Altitude")] = 0  # 海拔
-    speed: Annotated[float | None, Query(title="GPS Speed")] = 0  # 速度
-    GPSTime: Annotated[
-        datetime | None, Query(title="GPS Time", default_factory=datetime.now)
-    ]  # GPS时间
+    latitude: Annotated[float, Body(title="GPS Latitude", default=23.4)]  # 纬度
+    longitude: Annotated[float, Body(title="GPS Longitude", default=113.3)]  # 经度
+    altitude: Annotated[Optional[float], Body(title="GPS Altitude")] = 0  # 海拔
+    speed: Annotated[Optional[float], Body(title="GPS Speed")] = 0  # 速度
 
-    uploadTime: Annotated[
-        datetime | None, Query(title="Upload Time", default_factory=datetime.now)
-    ]  # 上传时间
+    # https://docs.pydantic.dev/2.0/usage/types/datetime/
+    # use timestamp allow float and int
+    GPSTimestamp: Annotated[
+        Optional[int],
+        Body(title="GPS Time", default_factory=getTimestamp),
+    ]  # GPS 时间戳
+
+    uploadTimestamp: Annotated[
+        Optional[int], Body(title="Upload Time", default_factory=getTimestamp)
+    ]  # 上传 时间戳

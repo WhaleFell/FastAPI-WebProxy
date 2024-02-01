@@ -2,6 +2,17 @@
 
 A webproxy base on FastAPI.Can build to vercel and any support python serverless platform.
 
+## Compatibility
+
+Currently(2024/2/1), there are different versions of Python on different serverless platforms. The following is a list of the versions of Python supported by different serverless platforms:
+
+- [Vercel](https://vercel.com/): 3.9
+- [Render](https://render.com/) 3.11
+
+So the project needs to be compatible with a minimum of Python 3.9. All kinds of high-level grammatical sugar in Python 3.11 are not supported.Example: `str | None` union type / `match` statement ...
+
+related discussion: <https://github.com/orgs/vercel/discussions/639>
+
 ## Development
 
 Use `black` for code formatting and `mypy` for static code analysis.
@@ -34,6 +45,8 @@ uvicorn app.main:app --port 8000 --reload
 ```
 
 ## API Interface
+
+detail API Document please visit `http://IP/docs` or `http://IP/redoc`. This is FastAPI auto generate API document by Swagger and Redoc.
 
 1. webproxy:
     - url: `/proxy/{url:path}` method: GET,POST desc: proxy website request

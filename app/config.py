@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# config.py 配置文件
+# config.py config file
 
 from pathlib import Path
 from typing import List, Union, Mapping
@@ -10,7 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import os
 
-# 应用路径
+# app root path
 ROOTPATH: Path = Path.cwd().absolute()
 
 
@@ -28,6 +28,7 @@ class Settings(BaseSettings):
 
     # MONGODB_URL: str = "mongodb+srv://root:lovehyy@cluster0.hnv8kgf.mongodb.net/?retryWrites=true&w=majority"
     MONGODB_URL: str = "mongodb://localhost:27017"
+    MONGODB_DATABASE: str = "webproxy"
 
     # china ip list download url
     QQWRY_DOWNLOAD_URL: str = (

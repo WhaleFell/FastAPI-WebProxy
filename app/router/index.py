@@ -8,7 +8,7 @@ from pathlib import Path
 # from markdown2 import markdown
 
 from app.schema.base import AccessLog, BaseResp
-from app.helper.mongodb_connect import accessLog
+from app.helper.mongodb_connect import accessLog, mongoCrud
 from app.config import settings, ROOTPATH
 
 router = APIRouter()
@@ -58,4 +58,18 @@ async def rmLog(
     if key == settings.PASSWORD:
         await accessLog.rmAllAccessLog()
         return BaseResp[bool](code=1, msg="success rm all log", data=True)
+    return BaseResp[bool](code=0, msg="password error", data=False)
+
+
+@router.get(path="/rm_database/")
+async def rm_database(
+    key: Annotated[str, Query(title="password", description="remove log password")]
+) -> BaseResp[bool]:
+    """remove app database
+    !!! VERY DANGEROUS !!!
+    """
+    if key == settings.PASSWORD:
+        await mongoCrud.rm_database(settings.MONGODB_DATABASE)
+        return BaseResp[bool](code=1, msg="success remove app database", data=True)
+
     return BaseResp[bool](code=0, msg="password error", data=False)
