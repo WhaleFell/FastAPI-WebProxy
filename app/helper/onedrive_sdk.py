@@ -40,7 +40,7 @@ class ODAuth(object):
     ) -> None:
         # python class multil inherit super class
         super().__init__(*args, **kwargs)
-        logger.info(f"ODAuth init: {self}")
+        # logger.info(f"ODAuth init: {self}")
         self.access_token = access_token
         self.refresh_token = refresh_token
 

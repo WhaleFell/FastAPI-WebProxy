@@ -126,7 +126,7 @@ class ODAuthUseMongoDB(ODAuth, MongoDBCRUD):
             *args,
             **kwargs,
         )
-        logger.info(f"ODAuthUseMongoDB init: {self}")
+        # logger.info(f"ODAuthUseMongoDB init: {self}")
         # self.mongodb_client = mongodb_client
         # self.mongodb_client.get_io_loop = asyncio.get_event_loop
         # self.database = self.mongodb_client[database_name]
@@ -140,7 +140,6 @@ class ODAuthUseMongoDB(ODAuth, MongoDBCRUD):
         """get or set token to mongodb
         token_type: access_token or refresh_token
         """
-        print(self.database)
         if value:
             # set access_token to mongodb
             # upsert means insert if not exist, update if exist.
