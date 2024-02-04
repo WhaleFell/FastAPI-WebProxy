@@ -197,12 +197,25 @@ class GPSUseMongoDB(MongoDBCRUD):
         doc = GPS_data.model_dump()
         return await self.insert_one(collection_name=self.collection_name, document=doc)
 
+    async def insert_mutiple_GPS_data(self, GPS_datas: List[GPSUploadData]) -> bool:
+        """insert mutiple GPS data
+        ordered=False means continue to insert if error occurred
+        """
+        try:
+            result_list = await self.collection.insert_many(
+                [GPS_data.model_dump() for GPS_data in GPS_datas], ordered=False
+            )
+            return True if result_list.acknowledged else False
+        except:
+            return False
+
     async def query_GPS_by_time(
         self,
-        limit: int = 200,
-        skip: int = 0,
+        limit: Optional[int] = None,
+        skip: Optional[int] = 0,
         start_timestamp: Optional[int] = None,
         end_timestamp: Optional[int] = None,
+        direction: int = -1,
     ) -> List[GPSUploadData]:
         """query GPS data by time"""
         query = {"uploadTimestamp": {"$gte": 0, "$lte": getTimestamp()}}
@@ -211,13 +224,21 @@ class GPSUseMongoDB(MongoDBCRUD):
         if end_timestamp:
             query["uploadTimestamp"]["$lte"] = end_timestamp
 
-        cursor = (
-            self.database[self.collection_name]
-            .find(query)
-            .skip(skip)
-            .limit(limit)
-            .sort("uploadTime", direction=-1)
-        )
+        if limit and skip:
+            cursor = (
+                self.database[self.collection_name]
+                .find(query)
+                .skip(skip)
+                .limit(limit)
+                .sort("uploadTimestamp", direction=direction)
+            )
+        else:
+            cursor = (
+                self.database[self.collection_name]
+                .find(query)
+                .sort("uploadTimestamp", direction=direction)
+            )
+
         result = []
         async for document in cursor:
             result.append(GPSUploadData(**document))
