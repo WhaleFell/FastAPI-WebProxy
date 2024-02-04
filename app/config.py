@@ -46,7 +46,12 @@ class Settings(BaseSettings):
     OD_REDIRECT_URI: str = "http://localhost/"
 
     # Not record setting
-    NOT_RECORD_PATH: List[str] = ["/favicon.ico", "/onedrive/file/", "/"]
+    NOT_RECORD_PATH: List[str] = [
+        "/",
+        "/favicon.ico",
+        "/onedrive/file/",
+        "/gps/upload/",
+    ]
     NOT_RECORD_IP: List[str] = ["216.144.248.27"]
 
     # case_sensitive means that the environment variable name is case sensitive

@@ -18,6 +18,7 @@ from pydantic import BaseModel
 
 from app.schema.base import GPSUploadData, BaseResp
 from app.helper.mongodb_connect import gps_mongodb
+from app.config import settings
 
 
 router = APIRouter()
@@ -31,7 +32,7 @@ async def gps_upload_route(data: GPSUploadData) -> BaseResp[bool]:
         data (GPSUploadData): GPS data model
     """
     status = await gps_mongodb.insert_GPS_data(data)
-    return BaseResp[bool](msg="upload success!", data=status)
+    return BaseResp[bool](msg="upload", data=status)
 
 
 @router.get("/gps/data/")
@@ -68,3 +69,14 @@ async def get_gps_data(
         return BaseResp[List[GPSUploadData]](code=1, msg="success", data=result)
     else:
         return BaseResp[List[GPSUploadData]](code=0, msg="no data", data=result)
+
+
+@router.get("/gps/rm/")
+async def gps_collection_rm(
+    key: str = Query(..., title="remove password")
+) -> BaseResp[bool]:
+    """remove gps collection"""
+    if key == settings.PASSWORD:
+        status = await gps_mongodb.gps_collection_rm()
+        return BaseResp[bool](msg="remove gps collection", data=status)
+    return BaseResp[bool](msg="key incorrect", data=False)

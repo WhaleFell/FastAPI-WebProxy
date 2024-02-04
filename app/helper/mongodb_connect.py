@@ -1,3 +1,4 @@
+from pymongo.errors import DuplicateKeyError
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, date
 from loguru import logger
@@ -33,9 +34,17 @@ class MongoDBCRUD(object):
         try:
             result = await self.database[collection_name].insert_one(document=document)
             return True if result.acknowledged else False
+        except DuplicateKeyError as e:
+            logger.warning("DuplicateKeyError")
+            return False
         except Exception as e:
             logger.error("insert one document error: %s" % e)
             return False
+
+    async def is_collection_exist(self, collection_name: str) -> bool:
+        """check collection exist"""
+        collections = await self.database.list_collection_names()
+        return collection_name in collections
 
     async def rm_collection(self, collection_name: str) -> bool:
         """remove collection"""
@@ -131,9 +140,6 @@ class ODAuthUseMongoDB(ODAuth, MongoDBCRUD):
         # self.mongodb_client.get_io_loop = asyncio.get_event_loop
         # self.database = self.mongodb_client[database_name]
 
-    # def __repr__(self) -> str:
-    #     return f"ODAuthUseMongoDB(access_token={self.access_token}, refresh_token={self.refresh_token})"
-
     async def __get_or_set_token(
         self, token_type: str, value: Optional[str] = None
     ) -> Optional[str]:
@@ -176,9 +182,18 @@ class GPSUseMongoDB(MongoDBCRUD):
 
     def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):
         super().__init__(client, database_name, *args, **kwargs)
+        self.collection = self.database[self.collection_name]
 
     async def insert_GPS_data(self, GPS_data: GPSUploadData) -> bool:
-        """insert GPS data"""
+        """insert GPS data `GPSTimestamp` as a unique index to avoid duplicate data"""
+
+        # check collection exist
+        if not await self.is_collection_exist(self.collection_name):
+            # create unique index
+            await self.collection.create_index(
+                [("GPSTimestamp", 1)], unique=True, name="GPSTimestamp"
+            )
+
         doc = GPS_data.model_dump()
         return await self.insert_one(collection_name=self.collection_name, document=doc)
 
@@ -207,6 +222,10 @@ class GPSUseMongoDB(MongoDBCRUD):
         async for document in cursor:
             result.append(GPSUploadData(**document))
         return result
+
+    async def gps_collection_rm(self) -> bool:
+        """remove collection"""
+        return await self.rm_collection(self.collection_name)
 
 
 mongoCrud = MongoDBCRUD(client=client, database_name=settings.MONGODB_DATABASE)
