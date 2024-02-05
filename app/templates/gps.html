@@ -147,15 +147,23 @@
                     paths.push([gps_data[i].longitude, gps_data[i].latitude]);
 
                 }
-                console.log(paths);
-                var polyline = new AMap.Polyline({
-                    path: paths,
-                    borderWeight: 10, // 线条宽度，默认为 1
-                    strokeColor: "red", // 线条颜色
-                    lineJoin: "round", // 折线拐点连接处样式
+
+                AMap.convertFrom(paths, 'gps', function (status, result) {
+                    if (result.info === 'ok') {
+                        var path2 = result.locations;
+                        var polyline = new AMap.Polyline({
+                            path: paths,
+                            borderWeight: 10, // 线条宽度，默认为 1
+                            strokeColor: "red", // 线条颜色
+                            lineJoin: "round", // 折线拐点连接处样式
+                        });
+                        map.add(polyline);
+                        map.setFitView();
+                    }
                 });
-                map.add(polyline);
-                map.setFitView();
+
+
+
             },
         });
     }
