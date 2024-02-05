@@ -68,6 +68,12 @@ async def get_gps_data(
             title="end timestamp",
         ),
     ] = None,
+    direction: Annotated[
+        Optional[int],
+        Query(
+            title="sort direction -1 descend 1 asc",
+        ),
+    ] = -1,
 ) -> BaseResp[List[GPSUploadData]]:
     """get gps data"""
 
@@ -76,6 +82,7 @@ async def get_gps_data(
         skip=skip,
         start_timestamp=start_timestamp,
         end_timestamp=end_timestamp,
+        direction=direction,
     )
 
     if result:

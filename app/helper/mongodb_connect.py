@@ -215,7 +215,7 @@ class GPSUseMongoDB(MongoDBCRUD):
         skip: Optional[int] = 0,
         start_timestamp: Optional[int] = None,
         end_timestamp: Optional[int] = None,
-        direction: int = -1,
+        direction: Optional[int] = -1,
     ) -> List[GPSUploadData]:
         """query GPS data by time"""
         query = {"uploadTimestamp": {"$gte": 0, "$lte": getTimestamp()}}
