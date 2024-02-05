@@ -27,8 +27,10 @@ class Settings(BaseSettings):
 
     BASE_URL: str = "http://127.0.0.1:8000"
 
-    # MONGODB_URL: str = "mongodb+srv://root:lovehyy@cluster0.hnv8kgf.mongodb.net/?retryWrites=true&w=majority"
-    MONGODB_URL: str = "mongodb://localhost:27017"
+    MONGODB_URL: str = (
+        "mongodb+srv://root:lovehyy@cluster0.hnv8kgf.mongodb.net/?retryWrites=true&w=majority"
+    )
+    # MONGODB_URL: str = "mongodb://localhost:27017"
     MONGODB_DATABASE: str = "webproxy"
 
     # china ip list download url

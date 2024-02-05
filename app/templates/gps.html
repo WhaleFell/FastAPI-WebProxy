@@ -18,25 +18,159 @@
 </head>
 
 <body>
+    <div id="infomation">
+        <h2 style="display: flex;">GPS 跟踪地图</h2>
+        <!-- 日期和时间选择框 -->
+        <div style="display: flex;">
+            开始时间:
+            <input type="date" id="date" value="2021-01-01" />
+            <input type="time" id="time" value="00:00" />
+        </div>
+        <div style="display: flex;">
+            结束时间:
+            <input type="date" id="date_end" value="2021-01-01" />
+            <input type="time" id="time_end" value="00:00" />
+        </div>
+        <button id="search_end" onclick="get_gps_data()">搜索</button>
+        <!-- 刷新页面 -->
+        <button id="refresh">刷新</button>
+    </div>
     <div id="container"></div>
 </body>
+<script src="https://webapi.amap.com/loader.js"></script>
+
+
 <script type="text/javascript">
     window._AMapSecurityConfig = {
         securityJsCode: "{{ MAP.MAP_SECURITY }}",
     };
-</script>
-<script src="https://webapi.amap.com/loader.js"></script>
-<script type="text/javascript">
+    var map;
     AMapLoader.load({
         key: "{{ MAP.MAP_KEY }}", //申请好的Web端开发者key，调用 load 时必填
         version: "2.0", //指定要加载的 JS API 的版本，缺省时默认为 1.4.15
+        plugins: ["AMap.Scale"], //插件列表
+        AMapUI: {
+            //是否加载 AMapUI，缺省不加载
+            version: "1.1", //AMapUI 版本
+            plugins: ["overlay/SimpleMarker",], //需要加载的 AMapUI ui 插件
+        },
+        Loca: {
+            //是否加载 Loca， 缺省不加载
+            version: "2.0", //Loca 版本
+        },
     })
         .then((AMap) => {
             //JS API 加载完成后获取AMap对象
+            map = new AMap.Map("container", {
+                viewMode: '2D', //默认使用 2D 模式
+                zoom: 11, //地图级别
+                center: [116.397428, 39.90923], //地图中心点
+            }); //"container"为 <div> 容器的 id
+            loadPlugin(map);
         })
         .catch((e) => {
             console.error(e); //加载错误提示
         });
+
+
+    function loadPlugin(map) {
+        pluginLst = ["AMap.ToolBar", "AMap.Scale", "AMap.MapType"];
+
+        pluginLst.forEach(function (plugin) {
+            AMap.plugin(plugin, function () {
+                let pluginInstance = new AMap[plugin.split(".")[1]]();
+                map.addControl(pluginInstance);
+            });
+        });
+    }
+
+    // 刷新
+    $("#refresh").click(function () {
+        location.reload();
+    });
+
+    var date_end = $("#date_end").val(
+        function () {
+            return new Date().toISOString().split("T")[0];
+        }
+    );
+    var time_end = $("#time_end").val(
+        function () {
+            return new Date().toTimeString().split(" ")[0];
+        }
+    );
+
+    // 将结束日期时间转换为秒级时间戳
+    function get_end_timestamp() {
+        var date = $("#date_end").val();
+        var time = $("#time_end").val();
+        var end_time = new Date(date + " " + time).getTime();
+        return end_time / 1000;
+    }
+
+    function get_start_timestamp() {
+        var date = $("#date").val();
+        var time = $("#time").val();
+        var end_time = new Date(date + " " + time).getTime();
+        return end_time / 1000;
+    }
+
+    // 秒级时间戳转化为日期时间
+    function timestamp_to_string(timestamp) {
+        var date = new Date(timestamp * 1000);
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        var hour = date.getHours();
+        var minute = date.getMinutes();
+        var second = date.getSeconds();
+        return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+    }
+
+    // 从接口获取指定时间的数据并绘制到地图上
+    function get_gps_data() {
+        var start_time = get_start_timestamp();
+        var end_time = get_end_timestamp();
+        $.ajax({
+            url: "/gps/data/",
+            type: "GET",
+            data: {
+                start_time: start_time,
+                end_time: end_time,
+            },
+            success: function (data) {
+                var gps_data = data.data;
+                console.log(gps_data);
+                var paths = [];
+                for (var i = 0; i < gps_data.length; i++) {
+                    // 画折线
+                    paths.push([gps_data[i].longitude, gps_data[i].latitude]);
+
+                }
+                console.log(paths);
+                var polyline = new AMap.Polyline({
+                    path: paths,
+                    borderWeight: 10, // 线条宽度，默认为 1
+                    strokeColor: "red", // 线条颜色
+                    lineJoin: "round", // 折线拐点连接处样式
+                });
+                map.add(polyline);
+                map.setFitView();
+            },
+        });
+    }
+
 </script>
+<style>
+    #infomation {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 999;
+        background-color: #fff;
+        padding: 5px;
+        border-radius: 5px;
+    }
+</style>
 
 </html>
