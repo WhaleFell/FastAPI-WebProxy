@@ -8,22 +8,21 @@
 @Desc    :   GPS data upload
 """
 from fastapi import APIRouter, Request, Response, HTTPException
-from fastapi import Query, Body
+from fastapi import Query
 from fastapi.responses import (
     StreamingResponse,
     Response,
+    HTMLResponse,
 )
 from typing import Optional, List
 from typing_extensions import Annotated
-from datetime import datetime, date
 from pathlib import Path
-from pydantic import BaseModel
-import io
 
 from app.schema.base import GPSUploadData, BaseResp
 from app.helper.mongodb_connect import gps_mongodb
 from app.helper.gps_kml_generator import make_kml
 from app.config import settings
+from app.main import templates
 
 
 router = APIRouter()
@@ -135,3 +134,14 @@ async def gps_collection_rm(
         status = await gps_mongodb.gps_collection_rm()
         return BaseResp[bool](msg="remove gps collection", data=status)
     return BaseResp[bool](code=0, msg="key incorrect", data=False)
+
+
+@router.get("/gps/")
+async def gps_index_html(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="gps.html",
+        context={
+            "MAP": {"MAP_KEY": settings.MAP_KEY, "MAP_SECURITY": settings.MAP_SECURITY}
+        },
+    )

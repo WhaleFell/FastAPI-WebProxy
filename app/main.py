@@ -2,9 +2,9 @@ from fastapi import FastAPI
 import pprint
 from loguru import logger
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-
-from app.config import settings, ROOTPATH
+from app.config import settings, APPPATH
 from app.helper.ip_lookup import setup_qqwry
 
 
@@ -31,6 +31,18 @@ app = FastAPI(
 )
 
 
+# mount static file
+from fastapi.staticfiles import StaticFiles
+
+app.mount(
+    "/static", StaticFiles(directory=Path(APPPATH, "static").as_posix()), name="static"
+)
+
+# template directory
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory=Path(APPPATH, "templates").as_posix())
+
 # register exception handler
 from app.register.exception import register_exception
 
@@ -42,14 +54,14 @@ from app.router import webproxy
 from app.router import index
 from app.router import sub_airport
 from app.router import onedrive
-from app.router import gps_upload
+from app.router import gps
 
 app.include_router(ip_lookup_route.router, tags=["ip_lookup"])
 app.include_router(webproxy.router, tags=["webproxy"])
 app.include_router(index.router, tags=["access_log"])
 app.include_router(sub_airport.router, tags=["sub_airport"])
 app.include_router(onedrive.router, tags=["onedrive"])
-app.include_router(gps_upload.router, tags=["gps_upload"])
+app.include_router(gps.router, tags=["gps_upload"])
 
 # register middleware
 from app.register.middleware import register_middleware

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width" />
+    <script src="/static/js/jquery.js"></script>
+    <title>GPS Track</title>
+    <style>
+        html,
+        body,
+        #container {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+</body>
+<script type="text/javascript">
+    window._AMapSecurityConfig = {
+        securityJsCode: "{{ MAP.MAP_SECURITY }}",
+    };
+</script>
+<script src="https://webapi.amap.com/loader.js"></script>
+<script type="text/javascript">
+    AMapLoader.load({
+        key: "{{ MAP.MAP_KEY }}", //申请好的Web端开发者key，调用 load 时必填
+        version: "2.0", //指定要加载的 JS API 的版本，缺省时默认为 1.4.15
+    })
+        .then((AMap) => {
+            //JS API 加载完成后获取AMap对象
+        })
+        .catch((e) => {
+            console.error(e); //加载错误提示
+        });
+</script>
+
+</html>

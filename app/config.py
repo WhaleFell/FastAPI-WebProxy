@@ -12,6 +12,7 @@ import os
 
 # app root path
 ROOTPATH: Path = Path.cwd().absolute()
+APPPATH: Path = Path(__file__).parent.absolute()
 
 
 # Reference: https://docs.pydantic.dev/usage/settings/
@@ -53,6 +54,11 @@ class Settings(BaseSettings):
         "/gps/upload/",
     ]
     NOT_RECORD_IP: List[str] = ["216.144.248.27"]
+
+    # GaoDE JS API
+    # https://lbs.amap.com/
+    MAP_KEY: str = "1f34538dbd8ac8bb9e143f064ace341f"
+    MAP_SECURITY: str = "38e11e519ee47e9a746b9907a5a54620"
 
     # case_sensitive means that the environment variable name is case sensitive
     model_config = SettingsConfigDict(
