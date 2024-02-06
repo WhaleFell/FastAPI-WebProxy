@@ -297,10 +297,12 @@ const liveChange = (value: any) => {
         liveTimer = setInterval(() => {
             getLiveGPSData().then((res) => {
                 if (res) {
-                    console.log(res);
-                    liveData.value = res;
-                    if (res.GPSTimestamp === liveData.value?.GPSTimestamp) {
-                        return;
+                    if (res.GPSTimestamp != liveData.value?.GPSTimestamp) {
+                        // correct gps data
+                        let result = gps84_To_gcj02(res.longitude, res.latitude);
+                        res.longitude = result["lng"];
+                        res.latitude = result["lat"];
+                        liveData.value = res;
                     }
                 }
             });
