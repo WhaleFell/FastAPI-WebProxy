@@ -9,7 +9,7 @@ from pathlib import Path
 
 from app.schema.base import AccessLog, BaseResp
 from app.helper.mongodb_connect import accessLog, mongoCrud
-from app.config import settings, ROOTPATH
+from app.config import settings, ROOTPATH, APPPATH
 
 router = APIRouter()
 
@@ -21,8 +21,12 @@ async def root():
     #     with open(Path(ROOTPATH, "README.md"), "r", encoding="utf-8") as f:
     #         html_content = markdown(f.read())
     #         return HTMLResponse(content=html_content)
+    if Path(APPPATH, "README.md").exists():
+        with open(Path(APPPATH, "index.html"), "r", encoding="utf-8") as f:
+            html_content = f.read()
+            return HTMLResponse(content=html_content)
 
-    return PlainTextResponse(content=settings.PROJECT_DESC)
+    # return PlainTextResponse(content=settings.PROJECT_DESC)
 
 
 @router.get("/favicon.ico", include_in_schema=False)

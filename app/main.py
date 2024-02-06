@@ -32,11 +32,11 @@ app = FastAPI(
 
 
 # mount static file
-# from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
 
-# app.mount(
-#     "/static", StaticFiles(directory=Path(APPPATH, "static").as_posix()), name="static"
-# )
+app.mount(
+    "/static", StaticFiles(directory=Path(APPPATH, "static").as_posix()), name="static"
+)
 
 # template directory
 from fastapi.templating import Jinja2Templates

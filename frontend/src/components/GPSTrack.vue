@@ -18,7 +18,7 @@
         <el-button type="danger" @click="clearGPSDatabase">清空数据库</el-button>
         <el-switch v-model="live" inline-prompt
             style="margin-left: 10px; --el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" active-text="实时更新"
-            inactive-text="关闭实时更新" :on-change="liveChange" />
+            inactive-text="关闭实时更新" @change="liveChange" />
     </div>
 
     <div class="live-data-info">
@@ -31,7 +31,7 @@
                 <p>纬度: {{ liveData?.latitude }}</p>
                 <p>速度: {{ liveData?.speed }}</p>
                 <p>海拔：{{ liveData?.altitude }}</p>
-                <p>GPS时间: {{ liveData?.GPSTimestamp }}</p>
+                <p>GPS时间: {{ timestampToUTC8(liveData?.GPSTimestamp) }}</p>
             </div>
         </el-card>
     </div>
@@ -48,13 +48,17 @@
             <el-amap-control-tool-bar></el-amap-control-tool-bar>
             <el-amap-control-geolocation position="RT"></el-amap-control-geolocation>
             <el-amap-layer-satellite :visible="mapType === '卫星图' ? true : false" :opacity="0.8"></el-amap-layer-satellite>
+
+            <el-amap-marker
+                :position="[liveData?.longitude ? liveData?.longitude : 113.3, liveData?.latitude ? liveData?.latitude : 23.3]"
+                :title="'北京市'"></el-amap-marker>
         </ElAmap>
     </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { ElAmap, ElAmapControlScale, ElAmapControlToolBar, ElAmapControlGeolocation, ElAmapLayerSatellite } from "@vuemap/vue-amap";
+import { ElAmap, ElAmapControlScale, ElAmapControlToolBar, ElAmapControlGeolocation, ElAmapMarker, ElAmapLayerSatellite } from "@vuemap/vue-amap";
 import type { FormInstance, FormRules } from 'element-plus'
 import { request } from "@/utils/request";
 import { BaseResponse } from "@/types/base";
@@ -126,6 +130,10 @@ const timestampDiffNow = (timestamp: number | undefined): number => {
     return Math.floor((Date.now() / 1000) - timestamp);
 }
 
+// 将时间戳转换为 UTC+8 时间字符串
+const timestampToUTC8 = (timestamp: number | any): string => {
+    return new Date(timestamp * 1000).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+}
 
 // 传入结束和开始时间戳,请求接口获取数据
 const fetchGPSData = async (start: number, end: number): Promise<GPSData[]> => {
@@ -192,7 +200,7 @@ const clearAllGPSData = async (key: string) => {
 const getLiveGPSData = async (): Promise<GPSData | null> => {
     try {
         const res = await request<BaseResponse<GPSData>>({
-            url: '/gps/data/live/',
+            url: '/gps/live/',
             method: 'get'
         });
         return res.data.data;
@@ -279,34 +287,21 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     loading(false)
 }
 
-// 在地图上添加点并标注
-const addMarker = (data: GPSData) => {
-    let result = gps84_To_gcj02(data.longitude, data.latitude);
-    let marker = new AMap.Marker({
-        position: [result["lng"], result["lat"]],
-    });
-    if (currentMap.value) {
-        currentMap.value.add(marker);
-    }
-}
 
 // 开启实时更新后处理
 const liveChange = (value: any) => {
+    console.log(value);
     live.value = value;
     // 每隔一秒获取一次实时数据
     if (live.value) {
         liveTimer = setInterval(() => {
             getLiveGPSData().then((res) => {
                 if (res) {
+                    console.log(res);
                     liveData.value = res;
                     if (res.GPSTimestamp === liveData.value?.GPSTimestamp) {
-                        ElMessage({
-                            type: 'info',
-                            message: '数据未更新'
-                        });
                         return;
                     }
-                    addMarker(res);
                 }
             });
         }, 1000);
@@ -316,14 +311,9 @@ const liveChange = (value: any) => {
     }
 }
 
-
-
-
-
 onMounted(() => {
+
 });
-
-
 
 </script>
 
