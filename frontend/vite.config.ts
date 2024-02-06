@@ -6,6 +6,7 @@ import IconsResolver from "unplugin-icons/resolver"
 import AutoImport from "unplugin-auto-import/vite"
 import Components from "unplugin-vue-components/vite"
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers"
+import { VueAmapResolver } from "@vuemap/unplugin-resolver"
 
 const PathSrc = path.resolve(__dirname, "src")
 
@@ -21,13 +22,19 @@ export default defineConfig({
             // Auto import functions from Element Plus, e.g. ElMessage, ElMessageBox... (with style)
             // 自动导入 Element Plus 相关函数，如：ElMessage, ElMessageBox... (带样式)
             resolvers: [
-                ElementPlusResolver(),
+                ElementPlusResolver({
+                    exclude: /^ElAmap[A-Z]*/,
+                }),
 
                 // Auto import icon components
                 // 自动导入图标组件
                 IconsResolver({
                     prefix: "Icon",
                 }),
+
+                // Auto import Amap components
+                // 自动导入高德地图组件
+                VueAmapResolver(),
             ],
 
             dts: path.resolve(PathSrc, "auto-imports.d.ts"),
@@ -42,7 +49,10 @@ export default defineConfig({
                 }),
                 // Auto register Element Plus components
                 // 自动导入 Element Plus 组件
-                ElementPlusResolver(),
+                ElementPlusResolver({
+                    exclude: /^ElAmap[A-Z]*/,
+                }),
+                VueAmapResolver(),
             ],
 
             dts: path.resolve(PathSrc, "components.d.ts"),
@@ -56,5 +66,8 @@ export default defineConfig({
         alias: {
             "@": PathSrc,
         },
+    },
+    server: {
+        host: "0.0.0.0",
     },
 })

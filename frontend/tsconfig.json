@@ -31,7 +31,10 @@
         "src/**/*.tsx",
         "src/**/*.vue",
         "auto-imports.d.ts",
-        "components.d.ts"
+        "components.d.ts",
+        "./node_modules/@vuemap/vue-amap/global.d.ts",
+        "./node_modules/@vuemap/vue-amap-loca/global.d.ts",
+        "./node_modules/@vuemap/vue-amap-extra/global.d.ts"
     ],
     "references": [{ "path": "./tsconfig.node.json" }]
 }

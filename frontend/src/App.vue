@@ -2,9 +2,9 @@
   <div class="common-layout">
     <ElContainer>
 
-      <ElAside width="auto">
+      <ElAside :width="isCollapse ? '0px' : 'auto'">
         <ElScrollbar>
-          <el-menu :default-active="router.currentRoute.value.path" :collapse="isCollapse" router>
+          <el-menu :default-active="router.currentRoute.value.path" :collapse="isCollapse" router close-on-click-outside>
             <el-menu-item index="/">
               <ElIcon>
                 <icon-park type="home" theme="filled" />
@@ -23,16 +23,19 @@
         </ElScrollbar>
       </ElAside>
 
-      <ElMain>
-        <el-button @click="isCollapse = !isCollapse">
-          <el-icon>
-            <icon-park v-if="isCollapse" type="menu-fold-one" theme="filled" />
-            <icon-park v-else type="menu-unfold-one" theme="filled" />
-          </el-icon>
-        </el-button>
-
-        <router-view></router-view>
-      </ElMain>
+      <ElContainer>
+        <ElHeader height="auto" style="text-align: left; font-size: 12px">
+          <el-button @click="isCollapse = !isCollapse">
+            <el-icon>
+              <icon-park v-if="isCollapse" type="menu-fold-one" theme="filled" />
+              <icon-park v-else type="menu-unfold-one" theme="filled" />
+            </el-icon>
+          </el-button>
+        </ElHeader>
+        <ElMain>
+          <router-view></router-view>
+        </ElMain>
+      </ElContainer>
     </ElContainer>
   </div>
 </template>
@@ -46,7 +49,10 @@ const isCollapse = ref<boolean>(false);
 </script>
 
 <style scoped>
-.common-layout {
-  display: flex;
+.common-layout .el-header {
+  position: relative;
+  background-color: var(--el-color-primary-light-7);
+  color: var(--el-text-color-primary);
+
 }
 </style>

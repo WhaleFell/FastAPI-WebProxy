@@ -136,6 +136,16 @@ async def gps_collection_rm(
     return BaseResp[bool](code=0, msg="key incorrect", data=False)
 
 
+@router.get("/gps/live/")
+async def get_gps_live() -> BaseResp[Optional[GPSUploadData]]:
+    """get latest gps data"""
+    result = await gps_mongodb.query_latest_GPS()
+    if result:
+        return BaseResp[Optional[GPSUploadData]](code=1, msg="success", data=result)
+    else:
+        return BaseResp[Optional[GPSUploadData]](code=0, msg="no data", data=result)
+
+
 @router.get("/gps/")
 async def gps_index_html(request: Request):
     return templates.TemplateResponse(

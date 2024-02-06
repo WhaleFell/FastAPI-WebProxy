@@ -226,23 +226,27 @@ class GPSUseMongoDB(MongoDBCRUD):
 
         if limit and skip:
             cursor = (
-                self.database[self.collection_name]
-                .find(query)
+                self.collection.find(query)
                 .skip(skip)
                 .limit(limit)
                 .sort("uploadTimestamp", direction=direction)
             )
         else:
-            cursor = (
-                self.database[self.collection_name]
-                .find(query)
-                .sort("uploadTimestamp", direction=direction)
+            cursor = self.collection.find(query).sort(
+                "uploadTimestamp", direction=direction
             )
 
         result = []
         async for document in cursor:
             result.append(GPSUploadData(**document))
         return result
+
+    async def query_latest_GPS(self) -> Optional[GPSUploadData]:
+        """query latest GPS data"""
+        cursor = self.collection.find().sort("uploadTimestamp", direction=-1).limit(1)
+        async for document in cursor:
+            return GPSUploadData(**document)
+        return None
 
     async def gps_collection_rm(self) -> bool:
         """remove collection"""
