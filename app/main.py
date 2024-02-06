@@ -31,11 +31,11 @@ app = FastAPI(
 )
 
 
-# mount static file
+# mount assets folder
 from fastapi.staticfiles import StaticFiles
 
 app.mount(
-    "/static", StaticFiles(directory=Path(APPPATH, "static").as_posix()), name="static"
+    "/assets", StaticFiles(directory=Path(APPPATH, "assets").as_posix()), name="assets"
 )
 
 # template directory
