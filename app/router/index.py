@@ -21,7 +21,7 @@ async def root():
     #     with open(Path(ROOTPATH, "README.md"), "r", encoding="utf-8") as f:
     #         html_content = markdown(f.read())
     #         return HTMLResponse(content=html_content)
-    if Path(APPPATH, "README.md").exists():
+    if Path(APPPATH, "index.html").exists():
         with open(Path(APPPATH, "index.html"), "r", encoding="utf-8") as f:
             html_content = f.read()
             return HTMLResponse(content=html_content)
