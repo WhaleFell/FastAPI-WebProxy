@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Request, Response, Query
 from loguru import logger
-from typing import Annotated
-
+from typing_extensions import Annotated
 
 from app.helper.webproxy_func import (
     is_valid_domain,

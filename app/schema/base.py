@@ -5,7 +5,8 @@
 # API 基模型
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
-from typing import Optional, Any, Annotated
+from typing import Optional, Any
+from typing_extensions import Annotated
 from pydantic import ConfigDict
 from datetime import datetime, timedelta, date
 from fastapi import Query, Body

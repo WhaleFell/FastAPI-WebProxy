@@ -9,6 +9,7 @@
 """
 from datetime import datetime, timezone, timedelta
 from app.schema.base import GPSUploadData
+from typing import List
 
 KML_FORMAT = """<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:gx="http://www.google.com/kml/ext/2.2">
@@ -55,7 +56,7 @@ def timestamp_to_str(timestamp) -> str:
     return datetime_to_str(dt)
 
 
-def make_kml(datas: list[GPSUploadData], name: str = "default") -> str:
+def make_kml(datas: List[GPSUploadData], name: str = "default") -> str:
     kml_str = ""
     for data in datas:
         try:
