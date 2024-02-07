@@ -54,6 +54,7 @@ class Settings(BaseSettings):
         "/favicon.ico",
         "/onedrive/file/",
         "/gps/upload/",
+        "/gps/upload/multi/",
     ]
     NOT_RECORD_IP: List[str] = ["216.144.248.27"]
 
