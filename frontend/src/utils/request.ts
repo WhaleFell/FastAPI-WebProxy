@@ -4,7 +4,7 @@ import { InternalAxiosRequestConfig, AxiosError } from "axios"
 
 export const request = axios.create({
     baseURL: "https://api.whaleluo.top/",
-    timeout: 2000,
+    timeout: 20000,
 })
 
 // 添加请求拦截器

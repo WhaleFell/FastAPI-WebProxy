@@ -201,6 +201,12 @@ class GPSUseMongoDB(MongoDBCRUD):
         """insert mutiple GPS data
         ordered=False means continue to insert if error occurred
         """
+        # check collection exist
+        if not await self.is_collection_exist(self.collection_name):
+            # create unique index
+            await self.collection.create_index(
+                [("GPSTimestamp", 1)], unique=True, name="GPSTimestamp"
+            )
         try:
             result_list = await self.collection.insert_many(
                 [GPS_data.model_dump() for GPS_data in GPS_datas], ordered=False
