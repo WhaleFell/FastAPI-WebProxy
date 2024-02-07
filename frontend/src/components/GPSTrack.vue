@@ -287,25 +287,36 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     loading(false)
 }
 
+const setMapCenter = (longitude: number, latitude: number) => {
+    if (currentMap.value) {
+        currentMap.value.setZoomAndCenter(16, [longitude, latitude]);
+    }
+}
 
 // 开启实时更新后处理
 const liveChange = (value: any) => {
     console.log(value);
     live.value = value;
     // 每隔一秒获取一次实时数据
-    if (live.value) {
-        liveTimer = setInterval(() => {
-            getLiveGPSData().then((res) => {
-                if (res) {
-                    if (res.GPSTimestamp != liveData.value?.GPSTimestamp) {
-                        // correct gps data
-                        let result = gps84_To_gcj02(res.longitude, res.latitude);
-                        res.longitude = result["lng"];
-                        res.latitude = result["lat"];
-                        liveData.value = res;
-                    }
+    const updateLive = (first: boolean = false) => {
+        getLiveGPSData().then((res) => {
+            if (res) {
+                // correct gps data
+                let result = gps84_To_gcj02(res.longitude, res.latitude);
+                res.longitude = result["lng"];
+                res.latitude = result["lat"];
+                liveData.value = res;
+                if (first) {
+                    setMapCenter(res.longitude, res.latitude);
                 }
-            });
+            }
+        });
+    }
+
+    if (live.value) {
+        updateLive(true);
+        liveTimer = setInterval(() => {
+            updateLive();
         }, 1000);
 
     } else {
