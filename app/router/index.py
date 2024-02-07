@@ -28,6 +28,10 @@ async def root():
 
     # return PlainTextResponse(content=settings.PROJECT_DESC)
 
+@router.get("/ping/")
+async def ping():
+    """ping health check"""
+    return PlainTextResponse(content="ok")
 
 @router.get("/favicon.ico", include_in_schema=False)
 async def favicon():
