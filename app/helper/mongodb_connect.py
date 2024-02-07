@@ -224,22 +224,22 @@ class GPSUseMongoDB(MongoDBCRUD):
         direction: Optional[int] = -1,
     ) -> List[GPSUploadData]:
         """query GPS data by time"""
-        query = {"uploadTimestamp": {"$gte": 0, "$lte": getTimestamp()}}
+        query = {"GPSTimestamp": {"$gte": 0, "$lte": getTimestamp()}}
         if start_timestamp:
-            query["uploadTimestamp"]["$gte"] = start_timestamp
+            query["GPSTimestamp"]["$gte"] = start_timestamp
         if end_timestamp:
-            query["uploadTimestamp"]["$lte"] = end_timestamp
+            query["GPSTimestamp"]["$lte"] = end_timestamp
 
         if limit and skip:
             cursor = (
                 self.collection.find(query)
                 .skip(skip)
                 .limit(limit)
-                .sort("uploadTimestamp", direction=direction)
+                .sort("GPSTimestamp", direction=direction)
             )
         else:
             cursor = self.collection.find(query).sort(
-                "uploadTimestamp", direction=direction
+                "GPSTimestamp", direction=direction
             )
 
         result = []
@@ -249,7 +249,7 @@ class GPSUseMongoDB(MongoDBCRUD):
 
     async def query_latest_GPS(self) -> Optional[GPSUploadData]:
         """query latest GPS data"""
-        cursor = self.collection.find().sort("uploadTimestamp", direction=-1).limit(1)
+        cursor = self.collection.find().sort("GPSTimestamp", direction=-1).limit(1)
         async for document in cursor:
             return GPSUploadData(**document)
         return None
