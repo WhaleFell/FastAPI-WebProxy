@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# -*-coding:utf-8 -*-
+"""
+@File    :   func.py
+@Time    :   2024/04/12 10:38:35
+@Author  :   WhaleFall
+@License :   (C)Copyright 2020-2023, WhaleFall
+@Desc    :   useful functions
+"""
+
 from fastapi import Request
 from loguru import logger
 from datetime import datetime, timezone, timedelta

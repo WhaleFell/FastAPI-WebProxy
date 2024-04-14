@@ -10,7 +10,7 @@ import httpx
 from loguru import logger
 import urllib.parse
 import asyncio
-from typing import Dict, Optional, Callable
+from typing import Dict, Optional, Callable, Coroutine, Union, Awaitable
 from typing_extensions import override
 from pathlib import Path
 import inspect
@@ -44,13 +44,23 @@ class ODAuth(object):
         self.access_token = access_token
         self.refresh_token = refresh_token
 
-    def get_or_set_access_token(self, value: Optional[str] = None) -> Optional[str]:
+    def get_or_set_access_token(
+        self, value: Optional[str] = None
+    ) -> Union[Optional[str], Awaitable[Optional[str]]]:
         """get or set access_token
         if value is not None, set access_token to value.
         """
         raise NotImplementedError
 
-    def get_or_set_refresh_token(self, value: Optional[str] = None) -> Optional[str]:
+    # def get_or_set_access_token(self, value: Optional[str] = None) -> Optional[str]:
+    #     """get or set access_token
+    #     if value is not None, set access_token to value.
+    #     """
+    #     raise NotImplementedError
+
+    def get_or_set_refresh_token(
+        self, value: Optional[str] = None
+    ) -> Union[Optional[str], Awaitable[Optional[str]]]:
         """get or set refresh_token
         if value is not None, set refresh_token to value.
         """
@@ -130,34 +140,40 @@ class OnedriveSDK(object):
     async def __get_or_set_access_token(
         self, value: Optional[str] = None
     ) -> Optional[str]:
+        get_access_token = self.od_auth.get_or_set_access_token
+
         if not value:
             # getter
-            if inspect.iscoroutinefunction(self.od_auth.get_or_set_access_token):
-                return await self.od_auth.get_or_set_access_token()
-            else:
-                return self.od_auth.get_or_set_access_token()
+            if inspect.iscoroutinefunction(get_access_token):
+                return await get_access_token()
+            elif inspect.isfunction(get_access_token):
+                return get_access_token()
         else:
             # setter
-            if inspect.iscoroutinefunction(self.od_auth.get_or_set_access_token):
-                return await self.od_auth.get_or_set_access_token(value)
-            else:
-                return self.od_auth.get_or_set_access_token(value)
+            if inspect.iscoroutinefunction(get_access_token):
+                return await get_access_token(value)
+            elif inspect.isfunction(get_access_token):
+                return get_access_token(value)
 
     async def __get_or_set_refresh_token(
         self, value: Optional[str] = None
     ) -> Optional[str]:
+
+        get_refresh_token = self.od_auth.get_or_set_refresh_token
+
         if not value:
             # getter
-            if inspect.iscoroutinefunction(self.od_auth.get_or_set_refresh_token):
-                return await self.od_auth.get_or_set_refresh_token()
-            else:
-                return self.od_auth.get_or_set_refresh_token()
+            if inspect.iscoroutinefunction(get_refresh_token):
+                return await get_refresh_token()
+            elif inspect.isfunction(get_refresh_token):
+                return get_refresh_token()
+
         else:
             # setter
-            if inspect.iscoroutinefunction(self.od_auth.get_or_set_refresh_token):
-                return await self.od_auth.get_or_set_refresh_token(value)
-            else:
-                return self.od_auth.get_or_set_refresh_token(value)
+            if inspect.iscoroutinefunction(get_refresh_token):
+                return await get_refresh_token(value)
+            elif inspect.isfunction(get_refresh_token):
+                return get_refresh_token(value)
 
     def generateLoginURL(self) -> str:
         """return and print login url"""

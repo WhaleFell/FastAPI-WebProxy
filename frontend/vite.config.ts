@@ -69,5 +69,12 @@ export default defineConfig({
     },
     server: {
         host: "0.0.0.0",
+        proxy: {
+            "/": {
+                target: "https://api.whaleluo.top",
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, ""),
+            },
+        },
     },
 })

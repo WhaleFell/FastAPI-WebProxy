@@ -20,6 +20,9 @@ dependencies:
   element-plus:
     specifier: ^2.5.5
     version: 2.5.5(vue@3.4.15)
+  nprogress:
+    specifier: ^0.2.0
+    version: 0.2.0
   vue:
     specifier: ^3.3.11
     version: 3.4.15(typescript@5.3.3)
@@ -1464,6 +1467,10 @@ packages:
     dependencies:
       path-key: 4.0.0
     dev: true
+
+  /nprogress@0.2.0:
+    resolution: {integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA==}
+    dev: false
 
   /number-precision@1.6.0:
     resolution: {integrity: sha512-05OLPgbgmnixJw+VvEh18yNPUo3iyp4BEWJcrLu4X9W05KmMifN7Mu5exYvQXqxxeNWhvIF+j3Rij+HmddM/hQ==}

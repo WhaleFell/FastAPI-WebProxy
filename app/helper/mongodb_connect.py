@@ -1,6 +1,5 @@
 from pymongo.errors import DuplicateKeyError
 from motor.motor_asyncio import AsyncIOMotorClient
-from datetime import datetime, date
 from loguru import logger
 from typing import List, Optional
 from typing_extensions import override
@@ -10,7 +9,7 @@ from app.config import settings
 from app.helper.ip_lookup import lookupIP
 from app.schema.base import AccessLog, GPSUploadData
 from app.helper.onedrive_sdk import ODAuth
-from app.helper.func import getBeijingTime, getTimestamp
+from app.helper.func import getTimestamp, getBeijingTime
 
 client = AsyncIOMotorClient(settings.MONGODB_URL)
 # https://stackoverflow.com/questions/65542103/future-task-attached-to-a-different-loop
@@ -23,7 +22,7 @@ client.get_io_loop = asyncio.get_event_loop
 
 
 class MongoDBCRUD(object):
-    def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):
+    def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):  # type: ignore
         super().__init__(*args, **kwargs)
         self.client = client
         self.database = self.client[database_name]
@@ -74,13 +73,13 @@ class AccessLogUseMongoDB(MongoDBCRUD):
 
     collection_name = "access_log"
 
-    def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):
+    def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):  # type: ignore
         super().__init__(client, database_name, *args, **kwargs)
 
     async def newAccessLog(self, ip: str, url: str, status_code: int):
         """new access log"""
         document = {
-            "time": datetime.utcnow(),
+            "time": getBeijingTime(),
             "ip": ip,
             "where": lookupIP(ip),
             "url": url,
@@ -124,7 +123,7 @@ class ODAuthUseMongoDB(ODAuth, MongoDBCRUD):
 
     def __init__(
         self,
-        mongodb_client: AsyncIOMotorClient,
+        mongodb_client: AsyncIOMotorClient,  # type: ignore
         database_name: str,
         *args,
         **kwargs,
@@ -180,7 +179,7 @@ class GPSUseMongoDB(MongoDBCRUD):
 
     collection_name = "gps_data"
 
-    def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):
+    def __init__(self, client: AsyncIOMotorClient, database_name: str, *args, **kwargs):  # type: ignore
         super().__init__(client, database_name, *args, **kwargs)
         self.collection = self.database[self.collection_name]
 
@@ -191,8 +190,8 @@ class GPSUseMongoDB(MongoDBCRUD):
         # if not await self.is_collection_exist(self.collection_name):
         # create unique index
         await self.collection.create_index(
-                [("GPSTimestamp", 1)], unique=True, name="GPSTimestamp"
-            )
+            [("GPSTimestamp", 1)], unique=True, name="GPSTimestamp"
+        )
 
         doc = GPS_data.model_dump()
         return await self.insert_one(collection_name=self.collection_name, document=doc)
@@ -205,7 +204,7 @@ class GPSUseMongoDB(MongoDBCRUD):
         # if not await self.is_collection_exist(self.collection_name):
         # create unique index
         await self.collection.create_index(
-                [("GPSTimestamp", 1)], unique=True, name="GPSTimestamp"
+            [("GPSTimestamp", 1)], unique=True, name="GPSTimestamp"
         )
         try:
             result_list = await self.collection.insert_many(
