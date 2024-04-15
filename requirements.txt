@@ -11,3 +11,4 @@ markdown2[all]
 pillow
 jsonpath-ng
 Jinja2
+python-dotenv

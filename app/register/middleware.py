@@ -1,12 +1,16 @@
+# fastapi and starlette
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request, FastAPI
 from starlette.background import BackgroundTask
 from fastapi.middleware.gzip import GZipMiddleware
-import time
 
-from app.helper.mongodb_connect import accessLog
-from app.helper.func import get_client_ip
+
+# external
+from app.core.func import get_client_ip
 from app.config import settings
+from app.routers.common.db import accessLog
+
+import time
 
 
 def register_middleware(app: FastAPI):

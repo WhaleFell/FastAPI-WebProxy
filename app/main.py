@@ -3,15 +3,23 @@ import pprint
 from loguru import logger
 from contextlib import asynccontextmanager
 from pathlib import Path
+from dotenv import load_dotenv
 
-from app.config import settings, APPPATH
-from app.helper.ip_lookup import setup_qqwry
+from app.config import settings, APPPATH, ROOTPATH
+from app.core.ip_lookup import setup_qqwry
+
+
+def init_env():
+    """init env"""
+    state = load_dotenv(dotenv_path=Path(ROOTPATH, ".env").as_posix())
+    logger.info(f"load env state: {state}")
 
 
 # fastapi lifespan https://fastapi.tiangolo.com/advanced/events/
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # before app start
+    init_env()
     setup_qqwry(update=not settings.DEV)
     logger.info(
         f"""
@@ -49,19 +57,10 @@ from app.register.exception import register_exception
 register_exception(app)
 
 # register router
-from app.router import ip_lookup_route
-from app.router import webproxy
-from app.router import index
-from app.router import sub_airport
-from app.router import onedrive
-from app.router import gps
+from app.routers import register_routes
 
-app.include_router(ip_lookup_route.router, tags=["ip_lookup"])
-app.include_router(webproxy.router, tags=["webproxy"])
-app.include_router(index.router, tags=["access_log"])
-app.include_router(sub_airport.router, tags=["sub_airport"])
-app.include_router(onedrive.router, tags=["onedrive"])
-app.include_router(gps.router, tags=["gps_upload"])
+register_routes(app)
+
 
 # register middleware
 from app.register.middleware import register_middleware

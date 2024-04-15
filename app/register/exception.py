@@ -21,12 +21,12 @@ from urllib.parse import parse_qsl
 from starlette.exceptions import (
     HTTPException as StarletteHTTPException,
 )
-
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.schema.base import BaseResp
+# external import
+from app.core.schema import BaseResp
 from app.config import ROOTPATH
 
 from typing import Optional, Any
@@ -105,7 +105,7 @@ def register_exception(app: FastAPI):
     #     )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(  # type: ignore
+    async def validation_exception_handler(
         request: Request, exc: RequestValidationError
     ) -> ORJSONResponse:
         """请求参数验证错误"""
@@ -157,8 +157,8 @@ def register_exception(app: FastAPI):
     async def all_exception_handler(request: Request, exc: Exception) -> ORJSONResponse:
         """全局异常"""
         error_info = f"Global Error: {str(exc)} URL:{request.url}"
-        # logger.exception(error_info)
-        logger.error(error_info)
+        logger.exception(error_info)
+        # logger.error(error_info)
 
         return response_body(
             request=request,
