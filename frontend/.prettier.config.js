@@ -21,5 +21,9 @@ export default {
   semi: false,
   /** 缩进 */
   tabWidth: 2,
-  plugins: ["prettier-plugin-tailwindcss"]
+  plugins: ["prettier-plugin-tailwindcss", '@ianvs/prettier-plugin-sort-imports'],
+  // This plugin's options
+  importOrder: ['^@core/(.*)$', '', '^@server/(.*)$', '', '^@ui/(.*)$', '', '^[./]'],
+  importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
+  importOrderTypeScriptVersion: '5.0.0',
 }

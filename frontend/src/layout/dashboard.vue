@@ -13,18 +13,6 @@
       <p class="w-full truncate text-center text-3xl font-bold">Dome - 臺灣核電羣控</p>
     </ElHeader>
     <ElContainer>
-      <ElAside width="auto" :class="mediaType === 'ssm' ? 'hidden' : ''">
-        <ElMenu :collapse="isCollapse" :collapse-transition="true" class="el-menu-vertical-demo">
-          <RouterLink v-for="(menu, index) in menus" :to="{ name: menu.name }">
-            <ElMenuItem :index="index.toString()">
-              <template #title>
-                {{ menu.name }}
-              </template>
-              <Radar theme="outline" size="12" fill="#333" class="mx-2" />
-            </ElMenuItem>
-          </RouterLink>
-        </ElMenu>
-      </ElAside>
       <ElMain>
         <RouterView></RouterView>
       </ElMain>
@@ -33,23 +21,13 @@
 </template>
 
 <script setup lang="ts">
-import routes from "@/router/routes"
-import { RouterLink } from "vue-router"
-import { RouteRecordRaw } from "vue-router"
 import { onMounted } from "vue"
-import { ElMenuItem } from "element-plus"
-import { MenuFoldOne, MenuUnfoldOne, Radar } from "@icon-park/vue-next"
-import { mediaType } from "@/utils/mediaQuery"
 
-const isCollapse = ref(false)
+import { MenuFoldOne, MenuUnfoldOne } from "@icon-park/vue-next"
 
 // watch(isCollapse, (newValue, oldValue) => {
 //   console.log(`new: ${newValue} old: ${oldValue}`)
 // })
-
-const menus = routes
-  .filter((route) => route.path === "/dashboard")
-  .flatMap((route) => route.children) as unknown as RouteRecordRaw[]
 
 onMounted(() => {})
 </script>
@@ -57,6 +35,6 @@ onMounted(() => {})
 <style scoped>
 .el-menu-vertical-demo:not(.el-menu--collapse) {
   width: 10rem;
-  min-height: 400px;
+  min-height: auto;
 }
 </style>

@@ -1,6 +1,8 @@
 // tailwind.config.ts
 import { Config } from 'tailwindcss'
 
+const defaultTheme = require('tailwindcss/defaultTheme')
+
 const config: Config = {
   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
 
@@ -8,13 +10,12 @@ const config: Config = {
     require('daisyui')
   ],
   theme: {
+    // add custom screens:
+    // https://tailwindcss.com/docs/screens
     screens: {
-      'ssm': '0px',
-      'sm': '640px',
-      'md': '768px',
-      'lg': '1024px',
-      'xl': '1280px',
-      'xxl': '1536px',
+      'smm': '0px',
+      'xs': '470px',
+      ...defaultTheme.screens,
     }
   }
 }
