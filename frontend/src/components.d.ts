@@ -22,9 +22,12 @@ declare module 'vue' {
     ElRadioButton: typeof import('element-plus/es')['ElRadioButton']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElScrollbar: typeof import('element-plus/es')['ElScrollbar']
+    ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
     GPSTrack: typeof import('./components/GPSTrack.vue')['default']
     Home: typeof import('./components/Home.vue')['default']
+    MaterialSymbolsLight10k: typeof import('~icons/material-symbols/light10k')['default']
+    MaterialSymbolsLight3kPlus: typeof import('~icons/material-symbols/light3k-plus')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

@@ -1,9 +1,12 @@
 import { createRouter, createWebHashHistory } from "vue-router"
+import { ElMessage } from "element-plus"
 
+// NProgress
 import NProgress from "nprogress"
 import "nprogress/nprogress.css"
 
 import routes from "./routes"
+import { auth } from "@/utils/auth"
 
 NProgress.configure({
     easing: "ease", // 动画方式
@@ -20,14 +23,19 @@ const router = createRouter({
 
 // 路由守卫/钩子 hook
 // 全局前置守卫 / 路由拦截
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, _from) => {
     NProgress.start()
+    // Change title
     const { title } = to.meta
     document.title = (title as string) || "default title"
-    // 判断登陆
-    // const { isNoLogin } = to.meta
-    // if (!isNoLogin) return '/login'
-    next()
+
+    // handle login
+    if (!auth.isLogined() && to.name !== "login") {
+        console.log("Not logined")
+        ElMessage.warning("Login required")
+        return { name: "login" }
+    }
+
 })
 
 router.afterEach(() => {

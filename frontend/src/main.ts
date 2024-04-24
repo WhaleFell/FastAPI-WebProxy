@@ -1,11 +1,11 @@
 import { createApp } from "vue"
 import App from "./App.vue"
 import router from "./router"
+// tailwind css
+import "./style.css"
+
+// element-plus css
 import "element-plus/dist/index.css"
-import "element-plus/es/components/message/style/css"
-// iconpark
-import "@icon-park/vue-next/styles/index.css"
-import { install } from "@icon-park/vue-next/es/all"
 
 // amap
 import VueAMap, { initAMapApiLoader } from "@vuemap/vue-amap"
@@ -19,6 +19,13 @@ initAMapApiLoader({
     //} // 如果需要使用loca组件库，需要加载Loca
 })
 
+// Pinia
+import { createPinia } from "pinia"
+const pinia = createPinia()
+
+
 const app = createApp(App)
-install(app)
-app.use(router).use(VueAMap).mount("#app")
+app.use(router)
+    .use(VueAMap)
+    .use(pinia)
+    .mount("#app")

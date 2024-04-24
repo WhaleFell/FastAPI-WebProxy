@@ -1,8 +1,12 @@
 import path from "path"
 import { defineConfig } from "vite"
 import Vue from "@vitejs/plugin-vue"
-import Icons from "unplugin-icons/vite"
-import IconsResolver from "unplugin-icons/resolver"
+
+// unplugin icon
+// import Icons from "unplugin-icons/vite"
+// import IconsResolver from "unplugin-icons/resolver"
+
+// AutoImport
 import AutoImport from "unplugin-auto-import/vite"
 import Components from "unplugin-vue-components/vite"
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers"
@@ -28,9 +32,7 @@ export default defineConfig({
 
                 // Auto import icon components
                 // 自动导入图标组件
-                IconsResolver({
-                    prefix: "Icon",
-                }),
+                // IconsResolver(),
 
                 // Auto import Amap components
                 // 自动导入高德地图组件
@@ -44,9 +46,9 @@ export default defineConfig({
             resolvers: [
                 // Auto register icon components
                 // 自动注册图标组件
-                IconsResolver({
-                    enabledCollections: ["ep"],
-                }),
+                // IconsResolver({
+                // }),
+
                 // Auto register Element Plus components
                 // 自动导入 Element Plus 组件
                 ElementPlusResolver({
@@ -58,10 +60,11 @@ export default defineConfig({
             dts: path.resolve(PathSrc, "components.d.ts"),
         }),
 
-        Icons({
-            autoInstall: true,
-        }),
+        // Icons({
+        //     autoInstall: true,
+        // }),
     ],
+
     resolve: {
         alias: {
             "@": PathSrc,
@@ -69,12 +72,12 @@ export default defineConfig({
     },
     server: {
         host: "0.0.0.0",
-        proxy: {
-            "/": {
-                target: "https://api.whaleluo.top",
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, ""),
-            },
-        },
+        // proxy: {
+        //     "/": {
+        //         target: "https://api.whaleluo.top",
+        //         changeOrigin: true,
+        //         rewrite: (path) => path.replace(/^\/api/, ""),
+        //     },
+        // },
     },
 })

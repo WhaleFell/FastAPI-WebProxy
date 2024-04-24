@@ -2,29 +2,59 @@
 
 import type { RouteRecordRaw } from "vue-router"
 
+
+const DashboardLayout = () => import("@/layout/dashboard.vue")
+
 // define routes
 const routes: Array<RouteRecordRaw> = [
+    // login
     {
         path: "/",
-        name: "home",
-        component: () => import("@/components/Home.vue"),
-        meta: {
-            title: "Home",
-        },
+        name: "index",
+        redirect: { name: "login" },
     },
     {
-        path: "/gps-track",
-        name: "GPSTrack",
-        component: () => import("@/components/GPSTrack.vue"),
+        path: "/login",
+        name: "login",
+        component: () => import("@/views/login.vue"),
         meta: {
-            title: "GPS Track",
+            title: "臺核中控",
         },
     },
+    // dashboard routes
+    {
+        path: "/dashboard",
+        component: DashboardLayout,
+        meta: {
+            title: "Dashboard",
+        },
+        children: [
+            {
+                path: "",
+                name: "dashboard",
+                component: () => import("@/components/Home.vue"),
+                meta: {
+                    title: "Home",
+                },
+            },
+            {
+                path: "amap",
+                name: "amap",
+                component: () => import("@/components/GPSTrack.vue"),
+                meta: {
+                    title: "GPS Track",
+                },
+            },
+
+        ]
+    },
+    // 404
     {
         path: "/:pathMatch(.*)*",
         name: "404",
         component: () => import("@/views/404.vue"),
     },
+
 ]
 
 export default routes
