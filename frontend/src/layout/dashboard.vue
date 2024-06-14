@@ -1,5 +1,5 @@
 <template>
-  <ElContainer>
+  <ElContainer class="h-[100vh]">
     <ElHeader height="auto" class="flex content-center items-center justify-start bg-gray-300">
       <!-- collapse btn -->
       <label class="btn swap swap-rotate btn-sm my-2">
@@ -12,29 +12,44 @@
       </label>
       <p class="w-full truncate text-center text-3xl font-bold">Dome - 臺灣核電羣控</p>
     </ElHeader>
-    <ElContainer>
+    <ElContainer class="h-[100vh] flex">
+      <Aside :isCollapse="isCollapse" />
       <ElMain>
-        <RouterView></RouterView>
+        <!-- router view -->
+        <!-- VUE can only animate one element at a time, so always define an element at the first level of the template, it can be a "div" or a "span", whatever, usually a div -->
+        <RouterView v-slot="{ Component }">
+          <Transition name="moveL">
+            <KeepAlive>
+              <component :is="Component" />
+            </KeepAlive>
+          </Transition>
+        </RouterView>
       </ElMain>
     </ElContainer>
   </ElContainer>
 </template>
 
 <script setup lang="ts">
+import Aside from "@/components/Aside.vue"
+import { MenuFoldOne, MenuUnfoldOne } from "@icon-park/vue-next"
 import { onMounted } from "vue"
 
-import { MenuFoldOne, MenuUnfoldOne } from "@icon-park/vue-next"
-
-// watch(isCollapse, (newValue, oldValue) => {
-//   console.log(`new: ${newValue} old: ${oldValue}`)
-// })
+const isCollapse = ref<boolean>(false)
 
 onMounted(() => {})
 </script>
 
 <style scoped>
-.el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 10rem;
-  min-height: auto;
+.moveL-enter-active,
+.moveL-leave-active {
+  transition: all 0.3s linear;
+  transform: translateX(0%);
+}
+.moveL-enter,
+.moveL-leave {
+  transform: translateX(-100%);
+}
+.moveL-leave-to {
+  transform: translateX(-100%);
 }
 </style>

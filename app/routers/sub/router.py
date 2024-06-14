@@ -15,7 +15,7 @@ import httpx
 import datetime
 
 router = APIRouter()
-# https://sub.cccc.gg/link/QhTycby0GHJECm9h?clash=1
+# https://accd.vo0.site/link/eTVpHf7Ju197AK4l?sub=3
 haeder = {"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
 SUB_TYPES = {
@@ -26,9 +26,7 @@ SUB_TYPES = {
 
 def replace_content(text: str, request: Request, type_: str = "clash") -> str:
     if type_ == "clash":
-        text = text.replace(
-            "官网 https://1100.gg（非节点）", "落落定制高级机场,3000CNY/月"
-        )
+        text = text.replace("官网：https://1100.gg", "落落定制高级机场,3000CNY/月")
         lines = text.split("\n")
         new_lines = [line for line in lines if not line.strip().startswith("#")]
         text = "\n".join(new_lines)
@@ -53,7 +51,7 @@ async def get_airport_sub_content(
     parameter = SUB_TYPES.get(type, "clash=1")
     async with httpx.AsyncClient() as client:
         resp = await client.get(
-            f"https://sub.cccc.gg/link/{key}?{parameter}", headers=haeder
+            f"https://accd.vo0.site/link/{key}?{parameter}", headers=haeder
         )
         return replace_content(resp.text, request, type)
 

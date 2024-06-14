@@ -2,6 +2,8 @@
 
 import type { RouteRecordRaw } from "vue-router"
 
+// icon
+import { Radar, HomeTwo } from "@icon-park/vue-next"
 
 const DashboardLayout = () => import("@/layout/dashboard.vue")
 
@@ -35,6 +37,7 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import("@/components/Home.vue"),
                 meta: {
                     title: "Home",
+                    icon: HomeTwo,
                 },
             },
             {
@@ -43,6 +46,7 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import("@/components/GPSTrack.vue"),
                 meta: {
                     title: "GPS Track",
+                    icon: Radar,
                 },
             },
 

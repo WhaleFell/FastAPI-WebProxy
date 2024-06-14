@@ -40,7 +40,7 @@ class Settings(BaseSettings):
 
     # sub airports url
     SUB_AIRPORTS_DICT: Mapping[str, str] = {
-        "good": "QhTycby0GHJECm9h",
+        "good": "eTVpHf7Ju197AK4l",
     }
 
     # onedrive config
